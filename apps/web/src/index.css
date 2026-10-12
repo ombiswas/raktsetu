@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #0a0a0a;
+  --color-canvas-soft: #1a1c20;
+  --color-canvas-card: #191919;
+  --color-canvas-mid: #363a3f;
+  --color-hairline: #212327;
+
+  --color-primary: #ffffff;
+  --color-on-primary: #0a0a0a;
+  --color-ink: #ffffff;
+  --color-ink-hover: #fafaf7;
+  --color-body: #dadbdf;
+  --color-body-mid: #7d8187;
+  --color-mute: #7d8187;
+
+  --color-accent-sunset: #ff7a17;
+  --color-accent-sunset-soft: #ffc285;
+  --color-accent-dusk: #7c3aed;
+  --color-accent-twilight: #c4b5fd;
+  --color-accent-breeze: #a0c3ec;
+  --color-accent-midnight: #0d1726;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #0a0a0a;
+    color: #dadbdf;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Typography Ladder Tokens */
+.display-xl {
+  font-size: 96px;
+  line-height: 96px;
+  letter-spacing: -2.4px;
+  font-weight: 400;
+}
+
+.display-lg {
+  font-size: 72px;
+  line-height: 72px;
+  letter-spacing: -1.8px;
+  font-weight: 400;
+}
+
+.display-md {
+  font-size: 48px;
+  line-height: 48px;
+  letter-spacing: -1.2px;
+  font-weight: 400;
+}
+
+.display-sm {
+  font-size: 32px;
+  line-height: 36px;
+  letter-spacing: -0.6px;
+  font-weight: 400;
+}
+
+.display-xs {
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.caption-mono {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+.caption-mono-sm {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+/* Canonical Button System */
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: transparent;
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-outline:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.btn-outline-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: transparent;
+  color: #ffffff;
+  padding: 4px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid #ffffff;
+  background-color: #ffffff;
+  color: #0a0a0a;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* Card System */
+.card-surface {
+  background-color: #191919;
+  border: 1px solid #212327;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+/* Input System */
+.input-surface {
+  background-color: #1a1c20;
+  border: 1px solid #212327;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 12px 16px;
+  font-size: 16px;
+  line-height: 24px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.input-surface:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+}
