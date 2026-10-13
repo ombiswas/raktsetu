@@ -38,7 +38,7 @@ export async function registerSecurityPlugins(
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-request-id']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-request-id', 'X-Requested-With', 'x-requested-with']
   });
 
   // 3. Global Rate Limiter
