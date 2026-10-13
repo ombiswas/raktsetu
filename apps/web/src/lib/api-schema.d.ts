@@ -1521,6 +1521,77 @@ export interface paths {
         };
         trace?: never;
     };
+    "/v1/requests/{id}/matching": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inspect anonymized matching status and candidates (Hospital owner / Admin)
+         * @description Returns run summary, candidate counts, and anonymized candidate ranks with approximate distance bands. No coordinates, full names, or phone numbers.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            runId: string;
+                            /** Format: uuid */
+                            requestId: string;
+                            /** @enum {string} */
+                            algorithm: "baseline" | "hybrid";
+                            algorithmVersion: string;
+                            createdAt: string;
+                            config: {
+                                [key: string]: unknown;
+                            };
+                            candidateCounts: {
+                                total: number;
+                                pending: number;
+                                accepted: number;
+                                declined: number;
+                                noResponse: number;
+                            };
+                            candidates: {
+                                /** Format: uuid */
+                                id: string;
+                                rank: number;
+                                /** @enum {string} */
+                                bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                                approximateDistance: string;
+                                /** @enum {string} */
+                                responseStatus: "pending" | "accepted" | "declined" | "no_response";
+                                score: number | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {

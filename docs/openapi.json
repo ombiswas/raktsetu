@@ -3162,6 +3162,166 @@
           }
         }
       }
+    },
+    "/v1/requests/{id}/matching": {
+      "get": {
+        "summary": "Inspect anonymized matching status and candidates (Hospital owner / Admin)",
+        "tags": [
+          "Matching"
+        ],
+        "description": "Returns run summary, candidate counts, and anonymized candidate ranks with approximate distance bands. No coordinates, full names, or phone numbers.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "runId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "algorithm": {
+                      "type": "string",
+                      "enum": [
+                        "baseline",
+                        "hybrid"
+                      ]
+                    },
+                    "algorithmVersion": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "config": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    },
+                    "candidateCounts": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "pending": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "accepted": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "declined": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "noResponse": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "pending",
+                        "accepted",
+                        "declined",
+                        "noResponse"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "candidates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "rank": {
+                            "type": "integer",
+                            "exclusiveMinimum": true,
+                            "minimum": 0
+                          },
+                          "bloodGroup": {
+                            "type": "string",
+                            "enum": [
+                              "A+",
+                              "A-",
+                              "B+",
+                              "B-",
+                              "AB+",
+                              "AB-",
+                              "O+",
+                              "O-"
+                            ]
+                          },
+                          "approximateDistance": {
+                            "type": "string"
+                          },
+                          "responseStatus": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "accepted",
+                              "declined",
+                              "no_response"
+                            ]
+                          },
+                          "score": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "rank",
+                          "bloodGroup",
+                          "approximateDistance",
+                          "responseStatus",
+                          "score"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "runId",
+                    "requestId",
+                    "algorithm",
+                    "algorithmVersion",
+                    "createdAt",
+                    "config",
+                    "candidateCounts",
+                    "candidates"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "servers": [
