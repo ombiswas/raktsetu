@@ -1,5 +1,4 @@
 import type PgBoss from 'pg-boss';
-import type { BloodRequestsService } from '../blood-requests.service.js';
 
 export const REQUEST_EXPIRY_JOB_NAME = 'blood-requests.expire-overdue';
 
@@ -9,25 +8,39 @@ export interface ExpiryJobResult {
   timestamp: string;
 }
 
+export interface RequestExpiryService {
+  expireOverdueRequests(asOfDate?: Date): Promise<number>;
+}
+
 /**
  * Registers and schedules the overdue requests expiry job with pg-boss.
  * Runs every minute to guarantee timely expiry transition without polling loops.
  */
 export async function registerRequestExpiryJob(
   boss: PgBoss,
-  service: BloodRequestsService
-): Promise<void> {
-  // 1. Register worker
-  await boss.work(REQUEST_EXPIRY_JOB_NAME, async () => {
-    const expiredCount = await service.expireOverdueRequests();
+  service: RequestExpiryService
+): Promise<string> {
+  // 1. Ensure queue exists prior to scheduling (required by pg-boss schema foreign key)
+  try {
+    await boss.createQueue(REQUEST_EXPIRY_JOB_NAME);
+  } catch {
+    // Queue may already exist or cannot be created concurrently
+  }
+
+  // 2. Register worker
+  const workerId = await boss.work(REQUEST_EXPIRY_JOB_NAME, async () => {
+    const now = new Date();
+    const expiredCount = await service.expireOverdueRequests(now);
     return {
       expiredCount,
-      timestamp: new Date().toISOString()
+      timestamp: now.toISOString()
     };
   });
 
-  // 2. Schedule recurring cron (every minute)
+  // 3. Schedule recurring cron (every minute)
   await boss.schedule(REQUEST_EXPIRY_JOB_NAME, '* * * * *', {}, { tz: 'UTC' });
+
+  return workerId;
 }
 
 /**
@@ -35,13 +48,14 @@ export async function registerRequestExpiryJob(
  * Useful for deterministic testing and manual reconciliation triggers.
  */
 export async function executeExpiryJobOnce(
-  service: BloodRequestsService,
+  service: RequestExpiryService,
   asOfDate?: Date
 ): Promise<ExpiryJobResult> {
-  const expiredCount = await service.expireOverdueRequests(asOfDate);
+  const targetDate = asOfDate ?? new Date();
+  const expiredCount = await service.expireOverdueRequests(targetDate);
   return {
     jobName: REQUEST_EXPIRY_JOB_NAME,
     expiredCount,
-    timestamp: (asOfDate ?? new Date()).toISOString()
+    timestamp: targetDate.toISOString()
   };
 }
