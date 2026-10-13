@@ -540,3 +540,29 @@ export const loginAttempts = pgTable(
   ]
 );
 
+// ---------------------------------------------------------------------------
+// 19. Idempotency Keys Table
+// ---------------------------------------------------------------------------
+
+export const idempotencyKeys = pgTable(
+  'idempotency_keys',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    key: text('key').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    requestHash: text('request_hash').notNull(),
+    responseCode: integer('response_code').notNull(),
+    responseBody: jsonb('response_body').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    uniqueIndex('idempotency_keys_key_user_unique').on(table.key, table.userId),
+    index('idempotency_keys_user_id_idx').on(table.userId),
+    index('idempotency_keys_expires_at_idx').on(table.expiresAt)
+  ]
+);
+
+

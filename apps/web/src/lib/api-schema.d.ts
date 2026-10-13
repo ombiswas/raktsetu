@@ -1228,6 +1228,299 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List blood requests */
+        get: {
+            parameters: {
+                query?: {
+                    status?: "open" | "matching" | "fulfilled" | "expired" | "cancelled";
+                    limit?: number;
+                    offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            requests: {
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                hospitalId: string;
+                                /** @enum {string} */
+                                bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                                /** @enum {string} */
+                                component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                                unitsRequired: number;
+                                unitsFulfilled: number;
+                                /** @enum {string} */
+                                urgency: "critical" | "urgent" | "standard";
+                                /** @enum {string} */
+                                status: "open" | "matching" | "fulfilled" | "expired" | "cancelled";
+                                neededBy: string;
+                                location: {
+                                    latitude: number;
+                                    longitude: number;
+                                };
+                                createdAt: string;
+                                updatedAt: string;
+                            }[];
+                        } | {
+                            requests: {
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                hospitalId: string;
+                                hospitalName: string;
+                                hospitalAddress: string;
+                                /** @enum {string} */
+                                bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                                /** @enum {string} */
+                                component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                                unitsRequired: number;
+                                unitsFulfilled: number;
+                                /** @enum {string} */
+                                urgency: "critical" | "urgent" | "standard";
+                                /** @enum {string} */
+                                status: "open" | "matching" | "fulfilled" | "expired" | "cancelled";
+                                neededBy: string;
+                                createdAt: string;
+                                updatedAt: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create blood request (Hospital only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "idempotency-key"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        blood_group?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                        /** @enum {string} */
+                        bloodGroup?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                        /** @enum {string} */
+                        component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                        units_required?: number;
+                        unitsRequired?: number;
+                        /** @enum {string} */
+                        urgency: "critical" | "urgent" | "standard";
+                        needed_by?: string;
+                        neededBy?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            hospitalId: string;
+                            /** @enum {string} */
+                            bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                            /** @enum {string} */
+                            component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                            unitsRequired: number;
+                            unitsFulfilled: number;
+                            /** @enum {string} */
+                            urgency: "critical" | "urgent" | "standard";
+                            /** @enum {string} */
+                            status: "open" | "matching" | "fulfilled" | "expired" | "cancelled";
+                            neededBy: string;
+                            location: {
+                                latitude: number;
+                                longitude: number;
+                            };
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get blood request by ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            hospitalId: string;
+                            /** @enum {string} */
+                            bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                            /** @enum {string} */
+                            component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                            unitsRequired: number;
+                            unitsFulfilled: number;
+                            /** @enum {string} */
+                            urgency: "critical" | "urgent" | "standard";
+                            /** @enum {string} */
+                            status: "open" | "matching" | "fulfilled" | "expired" | "cancelled";
+                            neededBy: string;
+                            location: {
+                                latitude: number;
+                                longitude: number;
+                            };
+                            createdAt: string;
+                            updatedAt: string;
+                        } | {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            hospitalId: string;
+                            hospitalName: string;
+                            hospitalAddress: string;
+                            /** @enum {string} */
+                            bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                            /** @enum {string} */
+                            component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                            unitsRequired: number;
+                            unitsFulfilled: number;
+                            /** @enum {string} */
+                            urgency: "critical" | "urgent" | "standard";
+                            /** @enum {string} */
+                            status: "open" | "matching" | "fulfilled" | "expired" | "cancelled";
+                            neededBy: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/requests/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cancel blood request (Owning hospital only) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        reason?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            hospitalId: string;
+                            /** @enum {string} */
+                            bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                            /** @enum {string} */
+                            component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                            unitsRequired: number;
+                            unitsFulfilled: number;
+                            /** @enum {string} */
+                            urgency: "critical" | "urgent" | "standard";
+                            /** @enum {string} */
+                            status: "open" | "matching" | "fulfilled" | "expired" | "cancelled";
+                            neededBy: string;
+                            location: {
+                                latitude: number;
+                                longitude: number;
+                            };
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
