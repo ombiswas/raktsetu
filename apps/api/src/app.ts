@@ -25,6 +25,10 @@ import {
   type DatabaseInstance
 } from './platform/database/connection.js';
 import { authRoutes } from './modules/auth/presentation/auth.routes.js';
+import { donorRoutes } from './modules/donors/index.js';
+import { hospitalRoutes } from './modules/hospitals/index.js';
+import { bloodBankRoutes } from './modules/blood-banks/index.js';
+import { adminRoutes } from './modules/admin/index.js';
 
 export interface AppDependencies {
   config?: Config;
@@ -131,6 +135,34 @@ export async function buildApp(deps: Partial<AppDependencies> = {}): Promise<Fas
   // Auth Module routes
   await app.register(authRoutes, {
     prefix: '/v1/auth',
+    db: dbInstance,
+    config: cfg
+  });
+
+  // Donor Module routes
+  await app.register(donorRoutes, {
+    prefix: '/v1/donors',
+    db: dbInstance,
+    config: cfg
+  });
+
+  // Hospital Module routes
+  await app.register(hospitalRoutes, {
+    prefix: '/v1/hospitals',
+    db: dbInstance,
+    config: cfg
+  });
+
+  // Blood Bank Module routes
+  await app.register(bloodBankRoutes, {
+    prefix: '/v1/blood-banks',
+    db: dbInstance,
+    config: cfg
+  });
+
+  // Admin Module routes
+  await app.register(adminRoutes, {
+    prefix: '/v1/admin',
     db: dbInstance,
     config: cfg
   });
