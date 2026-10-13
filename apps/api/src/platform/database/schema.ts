@@ -520,3 +520,23 @@ export const auditLogs = pgTable(
     index('audit_logs_created_at_idx').on(table.createdAt)
   ]
 );
+
+// ---------------------------------------------------------------------------
+// 18. Login Attempts / Lockouts Table
+// ---------------------------------------------------------------------------
+
+export const loginAttempts = pgTable(
+  'login_attempts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    identifier: text('identifier').notNull(),
+    failedCount: integer('failed_count').notNull().default(0),
+    lockedUntil: timestamp('locked_until', { withTimezone: true }),
+    lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    uniqueIndex('login_attempts_identifier_unique_idx').on(table.identifier),
+    index('login_attempts_locked_until_idx').on(table.lockedUntil)
+  ]
+);
+
