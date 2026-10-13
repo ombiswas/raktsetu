@@ -91,8 +91,72 @@ Every experimental run evaluates 4 distinct allocation strategies against identi
 
 ## 5. Experiment Execution & Artifact Layout
 
-- Experiment configs stored in `experiments/configs/` (JSON / YAML format).
-- Simulation runner executed via Python CLI or Node test harness.
-- Output metrics and raw trajectory logs written to `experiments/results/`.
-- Statistical analysis notebooks and summary figures placed in `experiments/analysis/`.
-- All outputs are version-controlled with deterministic seeds (`seed=42`).
+- Experiment configs stored in `experiments/configs/` (JSON format).
+- Simulation runner executed via CLI: `npm run exp:generate -- --config experiments/configs/default.json`.
+- Output metrics and raw trajectory logs written to `experiments/results/` (git-ignored).
+- Artifacts generated:
+  - `experiments/results/donor_response.csv` & `donor_response.metadata.json`
+  - `experiments/results/demand_series.csv` & `demand_series.metadata.json`
+- All outputs are labelled `SIMULATION` and accompanied by SHA-256 config hashes and reproducible seeds (`seed=42`).
+
+---
+
+## 6. Data Dictionary
+
+### 6.1 `donor_response.csv` (Notification-Level Observation)
+Each row represents a single emergency notification dispatched to an eligible, compatible donor at timestamp $T_{\text{notif}}$.
+
+| Column Name | Type | Range / Values | Definition | Feature / Label | Known at $T_{\text{notif}}$? |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `notification_id` | `string` | `notif-xxxxxxxx` | Unique dispatch identifier | Identifier | Yes |
+| `request_id` | `string` | `req-xxxxxx` | Emergency blood request ID | Identifier | Yes |
+| `donor_id` | `string` | `donor-xxxxx` | Unique candidate donor ID | Identifier | Yes |
+| `timestamp` | `string` | ISO 8601 UTC | Notification dispatch timestamp ($T_{\text{notif}}$) | Temporal Anchor | Yes |
+| `distance_km` | `float` | $[0.0, 30.0]$ | Geodesic distance between donor home and hospital | Feature | Yes |
+| `prior_response_rate` | `float` | $[0.0, 1.0]$ | Proportion of past alerts responded to prior to $T_{\text{notif}}$ | Feature | Yes |
+| `recency_score` | `float` | $[0.0, 1.0]$ | Normalized recency metric ($\min(365, \text{days}) / 365$) | Feature | Yes |
+| `total_past_donations`| `int` | $\ge 0$ | Cumulative completed donations strictly prior to $T_{\text{notif}}$ | Feature | Yes |
+| `days_since_last_donation` | `int` | $\ge 0$ | Days elapsed from donor's previous donation to $T_{\text{notif}}$ | Feature | Yes |
+| `recent_alerts_count` | `int` | $\ge 0$ | Total alerts received in the window $[T_{\text{notif}} - 7\text{d}, T_{\text{notif}})$ | Feature | Yes |
+| `age` | `int` | $[18, 65]$ | Candidate donor age in years at $T_{\text{notif}}$ | Feature | Yes |
+| `urgency` | `string` | `CRITICAL`, `URGENT`, `ROUTINE` | Emergency triage priority category | Feature | Yes |
+| `hour_of_day` | `int` | $[0, 23]$ | UTC hour of notification dispatch | Feature | Yes |
+| `is_weekend` | `boolean` | `true`, `false` | Indicator whether $T_{\text{notif}}$ is Saturday or Sunday | Feature | Yes |
+| `night_flag` | `int` | $\{0, 1\}$ | Indicator whether $T_{\text{notif}}$ occurs between 22:00 and 06:00 | Feature | Yes |
+| `blood_group` | `string` | 8 ABO/Rh groups | Candidate donor ABO/Rh blood group | Feature / Context | Yes |
+| `component_needed` | `string` | 4 components | Component requested (`whole_blood`, `rbc`, `plasma`, `platelets`) | Context | Yes |
+| `response` | `int` | $\{0, 1\}$ | Binary ground-truth outcome ($1 = \text{accepted}$, $0 = \text{declined/ignored}$) | **Target (Label)** | **NO** (Observed post-alert) |
+| `simulation` | `string` | `SIMULATION` | Research prototype simulation badge | Metadata | Yes |
+
+### 6.2 `demand_series.csv` (Daily Aggregated Demand)
+Each row records the daily aggregated units demanded per blood group and component.
+
+| Column Name | Type | Range / Values | Definition | Role |
+| :--- | :--- | :--- | :--- | :--- |
+| `date` | `string` | `YYYY-MM-DD` | Calendar date of emergency requests | Temporal index |
+| `blood_group` | `string` | 8 ABO/Rh groups | Recipient blood group requested | Category |
+| `component` | `string` | 4 components | Requested blood component | Category |
+| `units` | `int` | $\ge 1$ | Total units requested on this date | Target metric |
+| `simulation` | `string` | `SIMULATION` | Research prototype simulation badge | Metadata |
+
+---
+
+## 7. Strict Temporal Leakage Rules & Verification
+
+To prevent data leakage and guarantee that models evaluate realistic operational constraints:
+
+1. **Temporal Information Horizon Barrier**:
+   - For every notification at timestamp $T_{\text{notif}}$, no feature may be derived using information with timestamp $t \ge T_{\text{notif}}$.
+   - Donor fatigue (`recent_alerts_count`) is calculated over the strictly half-open interval $[T_{\text{notif}} - 7\text{ days}, T_{\text{notif}})$.
+   - `prior_response_rate` and `total_past_donations` count only events completed strictly before $T_{\text{notif}}$.
+2. **Zero Target and Latent Parameter Leakage**:
+   - The ML models are **NEVER** provided the latent function coefficients ($b_0 \dots b_5$), the additive noise term $\epsilon$, or future response status.
+   - The response column is excluded from the input feature matrix $X$.
+3. **Temporal Partitioning Protocol**:
+   - Models are trained using chronological splits:
+     - **Train Split**: Earliest 70% of chronological observations.
+     - **Validation Split**: Next 15% of chronological observations.
+     - **Test Split**: Latest 15% of chronological observations.
+   - Cross-validation must strictly preserve chronological order; random shuffling across the timeline is forbidden.
+4. **Time-Travel Automated Verification**:
+   - Unit tests (`apps/api/src/modules/experiments/__tests__/synthetic-data.test.ts`) assert that mutating or injecting post-$T_{\text{notif}}$ events produces zero change in the feature vector generated at $T_{\text{notif}}$.
