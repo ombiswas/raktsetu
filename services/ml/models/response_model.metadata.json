@@ -1,0 +1,70 @@
+{
+  "simulation": true,
+  "disclaimer": "SIMULATION PROTOTYPE: Academic probability model. Not clinical data.",
+  "model_version": "v0.2.0-calibrated-xgb",
+  "sha256_checksum": "4572b95d108edafec73781375aa823c0cf4642f31b49cabaa0a0ee86d570748b",
+  "features": [
+    "distance_km",
+    "prior_response_rate",
+    "recency_score",
+    "total_past_donations",
+    "days_since_last_donation",
+    "recent_alerts_count",
+    "age",
+    "hour_of_day",
+    "is_weekend",
+    "night_flag",
+    "urgency_critical",
+    "urgency_urgent"
+  ],
+  "best_base_model": "LogisticRegression (Baseline)",
+  "test_metrics": {
+    "roc_auc": 0.6979,
+    "pr_auc": 0.7299,
+    "brier_score": 0.2179,
+    "precision": 0.6758,
+    "recall": 0.6925,
+    "f1": 0.6841,
+    "calibration_error": 0.0254
+  },
+  "validation_metrics": {
+    "LogisticRegression (Baseline)": {
+      "roc_auc": 0.6935,
+      "pr_auc": 0.7547,
+      "brier_score": 0.2327,
+      "precision": 0.7605,
+      "recall": 0.5356,
+      "f1": 0.6285,
+      "calibration_error": 0.1272
+    },
+    "RandomForest": {
+      "roc_auc": 0.6869,
+      "pr_auc": 0.7559,
+      "brier_score": 0.2305,
+      "precision": 0.7575,
+      "recall": 0.5816,
+      "f1": 0.658,
+      "calibration_error": 0.1201
+    },
+    "XGBoost": {
+      "roc_auc": 0.6779,
+      "pr_auc": 0.7421,
+      "brier_score": 0.2347,
+      "precision": 0.7432,
+      "recall": 0.5674,
+      "f1": 0.6435,
+      "calibration_error": 0.1231
+    }
+  },
+  "data_hash": "4be7082805002e0ab8ae90cedb1cea8d8184b5f4686c0d5ecf60de7e3b46d7cc",
+  "library_versions": {
+    "python": "3.12.15",
+    "scikit_learn": "3.0.6"
+  },
+  "trained_at": "2026-10-13T18:43:45.038621+00:00",
+  "temporal_split": {
+    "train_rows": 7169,
+    "val_rows": 1536,
+    "test_rows": 1537
+  }
+}
