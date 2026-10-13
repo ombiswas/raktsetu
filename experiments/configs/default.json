@@ -1,0 +1,133 @@
+{
+  "simulation": true,
+  "disclaimer": "SIMULATION PROTOTYPE: Academic research synthetic dataset. Not clinical data.",
+  "seed": 42,
+  "version": "1.0.0",
+  "population": {
+    "num_donors": 1200,
+    "center": {
+      "name": "Dehradun",
+      "latitude": 30.3165,
+      "longitude": 78.0322
+    },
+    "clusters": [
+      {
+        "name": "Clock Tower / Paltan Bazaar",
+        "latitude": 30.3256,
+        "longitude": 78.0437,
+        "weight": 0.25,
+        "std_dev_km": 1.2
+      },
+      {
+        "name": "Rajpur Road",
+        "latitude": 30.3621,
+        "longitude": 78.0772,
+        "weight": 0.20,
+        "std_dev_km": 1.5
+      },
+      {
+        "name": "Prem Nagar / IMA",
+        "latitude": 30.3340,
+        "longitude": 77.9620,
+        "weight": 0.15,
+        "std_dev_km": 1.8
+      },
+      {
+        "name": "Clement Town / Subhash Nagar",
+        "latitude": 30.2680,
+        "longitude": 78.0160,
+        "weight": 0.15,
+        "std_dev_km": 1.5
+      },
+      {
+        "name": "Raipur / Nehru Colony",
+        "latitude": 30.3120,
+        "longitude": 78.0920,
+        "weight": 0.15,
+        "std_dev_km": 1.5
+      },
+      {
+        "name": "Outer Dehradun Dispersed",
+        "latitude": 30.3165,
+        "longitude": 78.0322,
+        "weight": 0.10,
+        "std_dev_km": 5.5
+      }
+    ],
+    "blood_group_distribution": {
+      "O+": 0.371,
+      "O-": 0.020,
+      "A+": 0.229,
+      "A-": 0.008,
+      "B+": 0.323,
+      "B-": 0.018,
+      "AB+": 0.027,
+      "AB-": 0.004
+    },
+    "age_range": {
+      "min": 18,
+      "max": 65
+    },
+    "weight_params": {
+      "mean": 65.0,
+      "std_dev": 12.0,
+      "min": 45.0
+    },
+    "male_ratio": 0.70
+  },
+  "timeline": {
+    "start_date": "2026-01-01T00:00:00.000Z",
+    "days": 90,
+    "requests_per_day_mean": 9.5,
+    "weekly_pattern": [1.0, 1.05, 1.02, 0.98, 1.15, 1.25, 1.10],
+    "seasonal_surge_factor": 1.20
+  },
+  "ground_truth_response": {
+    "b0_intercept": 0.15,
+    "b1_prior_response_rate": 1.85,
+    "b2_recency": -0.45,
+    "b3_urgency": {
+      "CRITICAL": 0.50,
+      "URGENT": 0.20,
+      "ROUTINE": -0.15
+    },
+    "b4_distance_km": 0.08,
+    "b5_night_flag": -0.80,
+    "noise_std": 0.20,
+    "base_rate": 0.30
+  },
+  "hospitals": [
+    {
+      "id": "hosp-max-dehradun",
+      "name": "Max Super Speciality Hospital, Dehradun",
+      "latitude": 30.3780,
+      "longitude": 78.0830
+    },
+    {
+      "id": "hosp-aiims-rishikesh",
+      "name": "AIIMS Rishikesh",
+      "latitude": 30.0760,
+      "longitude": 78.2880
+    },
+    {
+      "id": "hosp-doon-govt",
+      "name": "Doon Government Medical College Hospital",
+      "latitude": 30.3245,
+      "longitude": 78.0410
+    },
+    {
+      "id": "hosp-synergy",
+      "name": "Synergy Institute of Medical Sciences",
+      "latitude": 30.3420,
+      "longitude": 77.9940
+    },
+    {
+      "id": "hosp-graphic-era",
+      "name": "Graphic Era Institute of Medical Sciences",
+      "latitude": 30.2710,
+      "longitude": 78.0050
+    }
+  ],
+  "max_notification_radius_km": 25.0,
+  "max_candidates_per_request": 15
+}

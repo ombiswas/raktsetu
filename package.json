@@ -1,0 +1,8 @@
+{
+  "name": "raktsetu-root",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "exp:generate": "npm --prefix apps/api run exp:generate --"
+  }
+}

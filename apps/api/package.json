@@ -18,7 +18,8 @@
     "db:seed": "tsx src/platform/database/seed.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "openapi:generate": "tsx scripts/generate-openapi.ts"
+    "openapi:generate": "tsx scripts/generate-openapi.ts",
+    "exp:generate": "tsx src/modules/experiments/cli.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
