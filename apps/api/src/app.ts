@@ -29,7 +29,14 @@ import { donorRoutes } from './modules/donors/index.js';
 import { hospitalRoutes } from './modules/hospitals/index.js';
 import { bloodBankRoutes } from './modules/blood-banks/index.js';
 import { adminRoutes } from './modules/admin/index.js';
-import { bloodRequestsRoutes } from './modules/blood-requests/index.js';
+import { bloodRequestsRoutes, requestEventBus } from './modules/blood-requests/index.js';
+import {
+  matchingRoutes,
+  SpatialCandidateRepository,
+  ProximityRanker,
+  CreateMatchRunUseCase,
+  registerRequestCreatedMatchingSubscriber
+} from './modules/matching/index.js';
 
 export interface AppDependencies {
   config?: Config;
@@ -173,6 +180,27 @@ export async function buildApp(deps: Partial<AppDependencies> = {}): Promise<Fas
     prefix: '/v1/requests',
     db: dbInstance,
     config: cfg
+  });
+
+  // Matching Module routes
+  await app.register(matchingRoutes, {
+    prefix: '/v1/requests',
+    db: dbInstance,
+    config: cfg
+  });
+
+  // Automated Matching Subscriber on RequestCreated event
+  const matchingRepo = new SpatialCandidateRepository(dbInstance);
+  const baselineRanker = new ProximityRanker();
+  const createMatchRunUseCase = new CreateMatchRunUseCase(matchingRepo, baselineRanker);
+  const unsubscribeMatching = registerRequestCreatedMatchingSubscriber(
+    requestEventBus,
+    createMatchRunUseCase,
+    app.log
+  );
+
+  app.addHook('onClose', async () => {
+    unsubscribeMatching();
   });
 
   return app;
