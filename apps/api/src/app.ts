@@ -29,6 +29,7 @@ import { donorRoutes } from './modules/donors/index.js';
 import { hospitalRoutes } from './modules/hospitals/index.js';
 import { bloodBankRoutes } from './modules/blood-banks/index.js';
 import { adminRoutes } from './modules/admin/index.js';
+import { bloodRequestsRoutes } from './modules/blood-requests/index.js';
 
 export interface AppDependencies {
   config?: Config;
@@ -163,6 +164,13 @@ export async function buildApp(deps: Partial<AppDependencies> = {}): Promise<Fas
   // Admin Module routes
   await app.register(adminRoutes, {
     prefix: '/v1/admin',
+    db: dbInstance,
+    config: cfg
+  });
+
+  // Blood Requests Module routes
+  await app.register(bloodRequestsRoutes, {
+    prefix: '/v1/requests',
     db: dbInstance,
     config: cfg
   });
