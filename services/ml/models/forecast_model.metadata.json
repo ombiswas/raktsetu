@@ -1,0 +1,32 @@
+{
+  "simulation": true,
+  "disclaimer": "SIMULATION PROTOTYPE: Academic blood demand forecaster. Not clinical data.",
+  "model_version": "v0.2.0-xgb-forecast",
+  "sha256_checksum": "6c8c3b1d0fb9c8c8ca4b3a71df7c17e84a57bc62869b28e75c24d8d86524bbd7",
+  "best_model": "SARIMA",
+  "metrics": {
+    "Naive (Last Value)": {
+      "mae": 7.0952,
+      "rmse": 8.6106,
+      "mape": 32.0487
+    },
+    "Seasonal Naive (Lag-7)": {
+      "mae": 7.9524,
+      "rmse": 10.8781,
+      "mape": 33.5623
+    },
+    "SARIMA": {
+      "mae": 4.5105,
+      "rmse": 6.4604,
+      "mape": 19.9203
+    },
+    "XGBoost (Autoregressive)": {
+      "mae": 6.8012,
+      "rmse": 8.8191,
+      "mape": 31.5138
+    }
+  },
+  "data_hash": "0812aac59a5352d6e0af1b87c8a1e36e28dd65331977eec9a091f87e799f4309",
+  "trained_at": "2026-10-13T18:51:45.287887+00:00",
+  "total_days_trained": 90
+}
