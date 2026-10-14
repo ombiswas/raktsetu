@@ -1,52 +1,41 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth, type UserRole } from '../../app/AuthContext.js';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '../../app/AuthContext.js';
+import { loginFormSchema, type LoginFormData } from './auth-schemas.js';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card.js';
 import { Eyebrow } from '../../components/ui/Eyebrow.js';
 import { Button } from '../../components/ui/Button.js';
 import { TextInput } from '../../components/ui/TextInput.js';
-import { Select } from '../../components/ui/Select.js';
 
 export function LoginPage(): React.ReactElement {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setAuthSession } = useAuth();
+  const { login } = useAuth();
+  const [genericError, setGenericError] = useState<string | null>(null);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('HOSPITAL');
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setError('Please provide both email and password.');
-      return;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      email: '',
+      password: ''
     }
+  });
 
-    setIsLoading(true);
-    setError(null);
-
+  const onSubmit = async (data: LoginFormData) => {
+    setGenericError(null);
     try {
-      // Prototype mock auth / credential validation
-      const simulatedToken = 'mock-access-token-jwt-session';
-      setAuthSession(
-        {
-          id: 'user-001',
-          email,
-          role,
-          fullName: role === 'HOSPITAL' ? 'All India Institute of Medical Sciences' : 'Dr. Researcher'
-        },
-        simulatedToken
-      );
-
+      await login(data.email, data.password);
       const targetPath = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
       navigate(targetPath, { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed');
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // Security: Always return generic error message to prevent user/email enumeration
+      setGenericError('Invalid email or password. Please verify your credentials.');
     }
   };
 
@@ -63,50 +52,63 @@ export function LoginPage(): React.ReactElement {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <Select
-              label="Account Portal Role"
-              value={role}
-              onChange={(e) => setRole(e.target.value as UserRole)}
-              options={[
-                { value: 'HOSPITAL', label: 'Hospital Emergency Workspace' },
-                { value: 'DONOR', label: 'Volunteer Donor Portal' },
-                { value: 'ADMIN', label: 'Research Administrator' }
-              ]}
-            />
-
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
             <TextInput
               label="Email Address"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="operator@hospital.aiims.edu"
+              placeholder="user@example.org"
+              autoComplete="username email"
+              error={errors.email?.message}
               required
+              {...register('email')}
             />
 
             <TextInput
               label="Password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
+              autoComplete="current-password"
+              error={errors.password?.message}
               required
+              {...register('password')}
             />
 
-            {error && (
-              <div role="alert" className="p-3 bg-[#1a1c20] border border-[#ff7a17] rounded-[8px] text-xs font-mono text-[#ffc285]">
-                {error}
+            {genericError && (
+              <div
+                role="alert"
+                className="p-3 bg-sunset-edge/10 border border-sunset-edge/40 rounded-lg text-xs font-mono text-sunset-glow"
+              >
+                {genericError}
               </div>
             )}
 
             <Button
               type="submit"
               variant="primary"
-              isLoading={isLoading}
+              isLoading={isSubmitting}
               className="mt-2 w-full"
             >
               Sign In to Session
             </Button>
+
+            <div className="pt-4 border-t border-canvas-subtle/20 flex flex-col gap-2 text-center text-xs text-canvas-muted">
+              <div>
+                Volunteer donor?{' '}
+                <Link to="/register/donor" className="text-canvas-fg underline hover:text-breeze-glow">
+                  Register as Donor
+                </Link>
+              </div>
+              <div>
+                Healthcare institution?{' '}
+                <Link to="/register/hospital" className="text-canvas-fg underline hover:text-breeze-glow">
+                  Register Hospital
+                </Link>{' '}
+                or{' '}
+                <Link to="/register/blood-bank" className="text-canvas-fg underline hover:text-breeze-glow">
+                  Blood Bank
+                </Link>
+              </div>
+            </div>
           </form>
         </CardContent>
       </Card>
