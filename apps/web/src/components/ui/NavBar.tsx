@@ -26,14 +26,14 @@ export function NavBar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#212327] bg-[#0a0a0a]/90 backdrop-blur">
+    <header className="sticky top-0 z-40 w-full border-b border-canvas-subtle bg-canvas-base/90 backdrop-blur">
       {/* Simulation Prototype Banner */}
-      <div className="bg-[#1a1c20] border-b border-[#212327] px-6 py-1.5 flex items-center justify-between text-xs">
+      <div className="bg-canvas-card border-b border-canvas-subtle px-6 py-1.5 flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#ff7a17] animate-pulse" aria-hidden="true" />
-          <span className="caption-mono-sm text-[#ffc285]">{simulationTag}</span>
+          <span className="w-2 h-2 rounded-full bg-sunset-glow animate-pulse" aria-hidden="true" />
+          <span className="caption-mono-sm text-sunset-glow">{simulationTag}</span>
         </div>
-        <span className="text-[#7d8187] text-[11px] hidden sm:inline">
+        <span className="text-canvas-muted text-[11px] hidden sm:inline">
           No Clinical Decisions · Deterministic Hard Constraints Enforced First
         </span>
       </div>
@@ -49,10 +49,10 @@ export function NavBar({
                 onNavigate('/');
               }
             }}
-            className="flex items-center gap-3 no-underline text-[#ffffff]"
+            className="flex items-center gap-3 no-underline text-canvas-fg"
           >
-            <span className="text-xl font-normal tracking-tight text-[#ffffff]">{brandName}</span>
-            <span className="text-[11px] font-mono tracking-wider text-[#7d8187] border border-[#212327] px-2 py-0.5 rounded-full">
+            <span className="text-xl font-normal tracking-tight text-canvas-fg">{brandName}</span>
+            <span className="text-[11px] font-mono tracking-wider text-canvas-muted border border-canvas-subtle px-2 py-0.5 rounded-full">
               {version}
             </span>
           </a>
@@ -71,8 +71,8 @@ export function NavBar({
                 }}
                 className={`px-3.5 py-1.5 rounded-full text-sm font-normal transition-colors no-underline ${
                   item.active
-                    ? 'text-[#ffffff] bg-[#1a1c20] border border-[#212327]'
-                    : 'text-[#dadbdf] hover:text-[#ffffff] hover:bg-[#1a1c20]/50'
+                    ? 'text-canvas-fg bg-canvas-card border border-canvas-subtle'
+                    : 'text-canvas-fg/80 hover:text-canvas-fg hover:bg-canvas-card/50'
                 }`}
               >
                 {item.label}
@@ -83,14 +83,14 @@ export function NavBar({
 
         {/* Right Action & Mobile Toggle */}
         <div className="flex items-center gap-3">
-          {rightAction && <div className="hidden sm:block">{rightAction}</div>}
+          {rightAction && <div>{rightAction}</div>}
 
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
-            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-[8px] border border-[#212327] text-[#dadbdf] hover:text-[#ffffff]"
+            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg border border-canvas-subtle text-canvas-fg/80 hover:text-canvas-fg"
           >
             {mobileMenuOpen ? '✕' : '☰'}
           </button>
@@ -101,7 +101,7 @@ export function NavBar({
       {mobileMenuOpen && (
         <nav
           aria-label="Mobile Navigation"
-          className="md:hidden border-t border-[#212327] bg-[#1a1c20] px-4 py-4 flex flex-col gap-2"
+          className="md:hidden border-t border-canvas-subtle bg-canvas-card px-4 py-4 flex flex-col gap-2"
         >
           {items.map((item) => (
             <a
@@ -114,16 +114,15 @@ export function NavBar({
                   onNavigate(item.href);
                 }
               }}
-              className={`px-3.5 py-2.5 rounded-[8px] text-sm font-normal transition-colors no-underline block ${
+              className={`px-3.5 py-2.5 rounded-lg text-sm font-normal transition-colors no-underline block ${
                 item.active
-                  ? 'text-[#ffffff] bg-[#0a0a0a] border border-[#212327]'
-                  : 'text-[#dadbdf] hover:text-[#ffffff]'
+                  ? 'text-canvas-fg bg-canvas-base border border-canvas-subtle'
+                  : 'text-canvas-fg/80 hover:text-canvas-fg'
               }`}
             >
               {item.label}
             </a>
           ))}
-          {rightAction && <div className="pt-2 border-t border-[#212327] mt-2">{rightAction}</div>}
         </nav>
       )}
     </header>

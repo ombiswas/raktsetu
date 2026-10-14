@@ -24,7 +24,7 @@ export function AppShell({
   footer
 }: AppShellProps): React.ReactElement {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#dadbdf] flex flex-col font-sans">
+    <div className="min-h-screen bg-canvas-base text-canvas-fg/90 flex flex-col font-sans">
       {/* Accessibility Skip Link */}
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -38,13 +38,13 @@ export function AppShell({
         {sidebarItems && sidebarItems.length > 0 && (
           <aside
             aria-label="Sidebar Navigation"
-            className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#212327] p-4 flex md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible shrink-0"
+            className="w-full md:w-64 border-b md:border-b-0 md:border-r border-canvas-subtle p-4 flex md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible shrink-0"
           >
             {sidebarItems.map((item) => {
               const Tag = item.href ? 'a' : 'button';
               const activeClass = item.active
-                ? 'bg-[#1a1c20] text-[#ffffff] border-[#212327]'
-                : 'bg-transparent text-[#7d8187] hover:text-[#ffffff] hover:bg-[#1a1c20]/50 border-transparent';
+                ? 'bg-canvas-card text-canvas-fg border-canvas-subtle'
+                : 'bg-transparent text-canvas-muted hover:text-canvas-fg hover:bg-canvas-card/50 border-transparent';
 
               return (
                 <Tag
@@ -52,15 +52,15 @@ export function AppShell({
                   href={item.href}
                   onClick={item.onClick}
                   aria-current={item.active ? 'page' : undefined}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-[8px] border text-sm font-normal transition-colors text-left no-underline whitespace-nowrap md:whitespace-normal ${activeClass}`}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg border text-sm font-normal transition-colors text-left no-underline whitespace-nowrap md:whitespace-normal ${activeClass}`}
                 >
                   <div className="flex items-center gap-2.5">
-                    {item.icon && <span className="text-[#dadbdf]">{item.icon}</span>}
+                    {item.icon && <span className="text-canvas-fg">{item.icon}</span>}
                     <span>{item.label}</span>
                   </div>
 
                   {item.badge !== undefined && (
-                    <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[#191919] border border-[#212327] text-[#dadbdf]">
+                    <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-canvas-muted/10 border border-canvas-subtle text-canvas-fg">
                       {item.badge}
                     </span>
                   )}
@@ -78,11 +78,11 @@ export function AppShell({
 
       {/* Semantic Footer */}
       {footer ? (
-        <footer className="border-t border-[#212327] py-6 px-6 text-xs text-[#7d8187] text-center">
+        <footer className="border-t border-canvas-subtle py-6 px-6 text-xs text-canvas-muted text-center">
           {footer}
         </footer>
       ) : (
-        <footer className="border-t border-[#212327] py-6 px-6 text-xs text-[#7d8187] text-center">
+        <footer className="border-t border-canvas-subtle py-6 px-6 text-xs text-canvas-muted text-center">
           <p>© 2026 RaktSetu · Academic Research Prototype · No Clinical Decisions</p>
         </footer>
       )}
