@@ -49,6 +49,8 @@ import {
   DefaultWebPushClient,
   type Mailer
 } from './modules/notifications/index.js';
+import { forecastingRoutes } from './modules/forecasting/index.js';
+import { analyticsRoutes } from './modules/analytics/index.js';
 
 export interface AppDependencies {
   config?: Config;
@@ -221,6 +223,20 @@ export async function buildApp(deps: Partial<AppDependencies> = {}): Promise<Fas
   // Matching Module routes
   await app.register(matchingRoutes, {
     prefix: '/v1/requests',
+    db: dbInstance,
+    config: cfg
+  });
+
+  // Forecasting Module routes
+  await app.register(forecastingRoutes, {
+    prefix: '/v1/forecasts',
+    db: dbInstance,
+    config: cfg
+  });
+
+  // Analytics Module routes
+  await app.register(analyticsRoutes, {
+    prefix: '/v1/analytics',
     db: dbInstance,
     config: cfg
   });

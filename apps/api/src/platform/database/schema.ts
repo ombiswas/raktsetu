@@ -272,6 +272,7 @@ export const bloodRequests = pgTable(
   (table) => [
     index('blood_requests_hospital_id_idx').on(table.hospitalId),
     index('blood_requests_status_idx').on(table.status),
+    index('blood_requests_created_at_idx').on(table.createdAt),
     index('blood_requests_location_gist_idx').using('gist', table.location),
     check('blood_requests_units_required_check', sql`${table.unitsRequired} > 0`),
     check(
@@ -326,7 +327,11 @@ export const matchRuns = pgTable(
     degraded: boolean('degraded').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
   },
-  (table) => [index('match_runs_request_id_idx').on(table.requestId)]
+  (table) => [
+    index('match_runs_request_id_idx').on(table.requestId),
+    index('match_runs_degraded_idx').on(table.degraded),
+    index('match_runs_created_at_idx').on(table.createdAt)
+  ]
 );
 
 // ---------------------------------------------------------------------------
@@ -357,7 +362,9 @@ export const matchCandidates = pgTable(
   (table) => [
     unique('match_candidates_run_donor_unique').on(table.runId, table.donorId),
     index('match_candidates_run_id_idx').on(table.runId),
-    index('match_candidates_donor_id_idx').on(table.donorId)
+    index('match_candidates_donor_id_idx').on(table.donorId),
+    index('match_candidates_notified_response_idx').on(table.notifiedAt, table.response),
+    index('match_candidates_response_responded_idx').on(table.response, table.respondedAt)
   ]
 );
 
@@ -465,6 +472,12 @@ export const demandForecasts = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
   },
   (table) => [
+    uniqueIndex('demand_forecasts_series_unique_idx').on(
+      table.bloodGroup,
+      table.component,
+      table.horizonStart
+    ),
+    index('demand_forecasts_group_comp_idx').on(table.bloodGroup, table.component),
     check('demand_forecasts_predicted_units_check', sql`${table.predictedUnits} >= 0`)
   ]
 );
