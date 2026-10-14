@@ -34,7 +34,7 @@ describe('App Shell, Routing, and Error Boundaries', () => {
     render(
       <MemoryRouter initialEntries={['/protected']}>
         <AuthProvider>
-          <RouteGuard allowedRoles={['HOSPITAL']}>
+          <RouteGuard allowedRoles={['hospital']}>
             <ProtectedView />
           </RouteGuard>
         </AuthProvider>
