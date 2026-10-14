@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import joblib  # type: ignore[import-untyped]
+import joblib
 
 logger = logging.getLogger("raktsetu.ml.loader")
 

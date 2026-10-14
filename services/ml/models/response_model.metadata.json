@@ -61,7 +61,7 @@
     "python": "3.12.15",
     "scikit_learn": "3.0.6"
   },
-  "trained_at": "2026-10-13T18:43:45.038621+00:00",
+  "trained_at": "2026-10-14T05:06:55.211185+00:00",
   "temporal_split": {
     "train_rows": 7169,
     "val_rows": 1536,

@@ -112,8 +112,11 @@ def run_forecast_training() -> dict[str, Any]:
     test_folds = 3
     print(f"\n[2] Walk-Forward Validation Setup: {test_folds} folds of horizon H={horizon} days")
 
-    naive_preds, snaive_preds, sarima_preds, xgb_preds = [], [], [], []
-    actuals = []
+    naive_preds: list[float] = []
+    snaive_preds: list[float] = []
+    sarima_preds: list[float] = []
+    xgb_preds: list[float] = []
+    actuals: list[float] = []
 
     for fold in range(test_folds):
         cutoff = total_days - (test_folds - fold) * horizon

@@ -17,22 +17,22 @@ class DonorFeatureRow(BaseModel):
     donor_id: str = Field(..., min_length=1, max_length=100, pattern=r"^[a-zA-Z0-9_\-]+$")
     distance_km: Annotated[float, Field(ge=0.0, le=100.0, description="Geodesic distance in km")]
     prior_response_rate: Annotated[
-        float, Field(default=0.3, ge=0.0, le=1.0, description="Historical acceptance rate [0, 1]")
-    ]
+        float, Field(ge=0.0, le=1.0, description="Historical acceptance rate [0, 1]")
+    ] = 0.3
     historical_response_rate: Annotated[
-        float | None, Field(default=None, ge=0.0, le=1.0, description="Alias for response rate")
-    ]
+        float | None, Field(ge=0.0, le=1.0, description="Alias for response rate")
+    ] = None
     recency_score: Annotated[
-        float | None, Field(default=None, ge=0.0, le=1.0, description="Normalized recency [0, 1]")
-    ]
-    total_past_donations: Annotated[int, Field(default=0, ge=0, le=500)]
-    days_since_last_donation: Annotated[int, Field(default=120, ge=0, le=5000)]
-    recent_alerts_count: Annotated[int, Field(default=0, ge=0, le=100)]
+        float | None, Field(ge=0.0, le=1.0, description="Normalized recency [0, 1]")
+    ] = None
+    total_past_donations: Annotated[int, Field(ge=0, le=500)] = 0
+    days_since_last_donation: Annotated[int, Field(ge=0, le=5000)] = 120
+    recent_alerts_count: Annotated[int, Field(ge=0, le=100)] = 0
     age: Annotated[int, Field(ge=18, le=65)]
     urgency: Literal["CRITICAL", "URGENT", "ROUTINE"] = "ROUTINE"
     hour_of_day: Annotated[int, Field(ge=0, le=23)]
     is_weekend: bool = False
-    night_flag: Annotated[int | None, Field(default=None, ge=0, le=1)]
+    night_flag: Annotated[int | None, Field(ge=0, le=1)] = None
 
     def get_effective_response_rate(self) -> float:
         if self.historical_response_rate is not None:

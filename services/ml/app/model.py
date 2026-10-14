@@ -168,7 +168,7 @@ class ProductionDemandForecaster:
 
         if self.model_type == "sarima":
             try:
-                from statsmodels.tsa.statespace.sarimax import SARIMAX  # type: ignore[import-untyped]
+                from statsmodels.tsa.statespace.sarimax import SARIMAX
 
                 sarima_mod = SARIMAX(history, order=(1, 0, 1), seasonal_order=(1, 0, 1, 7))
                 model_fit = sarima_mod.fit(disp=False)
