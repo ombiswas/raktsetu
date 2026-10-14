@@ -15,6 +15,7 @@ import { createAuthenticateGuard, authorize } from '../../platform/http/guards/i
 import type { DatabaseInstance } from '../../platform/database/connection.js';
 import type { Config } from '../../platform/config/index.js';
 import { AuditService } from '../audit/audit.service.js';
+import { inventoryRoutes } from '../inventory/index.js';
 
 export interface BloodBankRoutesOptions {
   db: DatabaseInstance;
@@ -140,4 +141,10 @@ export const bloodBankRoutes: FastifyPluginAsync<BloodBankRoutesOptions> = async
     },
     (req, reply) => controller.deferDonor(req, reply)
   );
+
+  // 6. Blood Inventory Management (/me/inventory, /me/inventory/adjust)
+  await app.register(inventoryRoutes, {
+    db,
+    config
+  });
 };

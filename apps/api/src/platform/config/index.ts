@@ -54,6 +54,7 @@ export const envSchema = z
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .optional(),
+    INVENTORY_LOW_STOCK_THRESHOLD: z.coerce.number().int().nonnegative().default(10),
     TRUST_PROXY: z
       .preprocess((val) => {
         if (typeof val === 'string') {
