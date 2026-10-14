@@ -11,6 +11,8 @@ export interface MatchingCandidateView {
   approximateDistance: string; // e.g. "2-3 km", "< 1 km"
   responseStatus: 'pending' | 'accepted' | 'declined' | 'no_response';
   score: number | null;
+  firstName?: string | undefined;
+  phone?: string | undefined;
 }
 
 export interface MatchingRunCandidateCounts {

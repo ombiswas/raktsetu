@@ -31,7 +31,9 @@ export const matchingCandidateSchema = z.object({
   bloodGroup: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
   approximateDistance: z.string(),
   responseStatus: z.enum(['pending', 'accepted', 'declined', 'no_response']),
-  score: z.number().nullable()
+  score: z.number().nullable(),
+  firstName: z.string().optional(),
+  phone: z.string().optional()
 });
 
 export const matchingStatusResponseSchema = z.object({
@@ -52,3 +54,19 @@ export const matchingStatusResponseSchema = z.object({
 });
 
 export type MatchingStatusResponse = z.infer<typeof matchingStatusResponseSchema>;
+
+export const respondRequestBodySchema = z.object({
+  action: z.enum(['accept', 'decline'])
+});
+
+export type RespondRequestBody = z.infer<typeof respondRequestBodySchema>;
+
+export const respondRequestResponseSchema = z.object({
+  success: z.boolean(),
+  candidateId: z.string().uuid(),
+  response: z.enum(['accepted', 'declined']),
+  isFulfilled: z.boolean(),
+  message: z.string()
+});
+
+export type RespondRequestResponse = z.infer<typeof respondRequestResponseSchema>;

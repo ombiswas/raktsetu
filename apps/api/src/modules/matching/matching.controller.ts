@@ -5,7 +5,7 @@
 
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { MatchingService } from './matching.service.js';
-import type { MatchingParams } from './matching.schema.js';
+import type { MatchingParams, RespondRequestBody } from './matching.schema.js';
 import { UnauthorizedError } from '../../platform/http/errors.js';
 
 export class MatchingController {
@@ -28,5 +28,22 @@ export class MatchingController {
     });
 
     await reply.status(200).send(statusView);
+  };
+
+  public respond = async (
+    req: FastifyRequest<{ Params: MatchingParams; Body: RespondRequestBody }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedError('Authentication required to respond to blood requests');
+    }
+
+    const { id: requestId } = req.params;
+    const { action } = req.body;
+
+    const result = await this.matchingService.respondToRequest(requestId, user.id, action);
+
+    await reply.status(200).send(result);
   };
 }

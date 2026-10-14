@@ -1,6 +1,8 @@
 /**
  * Matching Routes Plugin
- * Exposes GET /v1/requests/:id/matching for hospital owner or admin inspection.
+ * Exposes:
+ * - GET /v1/requests/:id/matching: inspect anonymized candidate radar and consent-revealed contact info (Hospital/Admin)
+ * - POST /v1/requests/:id/respond: record donor accept/decline response (Donor)
  */
 
 import type { FastifyPluginAsync } from 'fastify';
@@ -10,16 +12,21 @@ import { MatchingController } from './matching.controller.js';
 import {
   matchingParamsSchema,
   matchingStatusResponseSchema,
-  type MatchingParams
+  respondRequestBodySchema,
+  respondRequestResponseSchema,
+  type MatchingParams,
+  type RespondRequestBody
 } from './matching.schema.js';
 import { createAuthenticateGuard, authorize } from '../../platform/http/guards/index.js';
 import type { DatabaseInstance } from '../../platform/database/connection.js';
 import type { Config } from '../../platform/config/index.js';
+import { AuditService } from '../audit/audit.service.js';
 
 export interface MatchingRoutesOptions {
   db: DatabaseInstance;
   config: Config;
   service?: MatchingService;
+  auditService?: AuditService;
 }
 
 export const matchingRoutes: FastifyPluginAsync<MatchingRoutesOptions> = async (
@@ -28,12 +35,13 @@ export const matchingRoutes: FastifyPluginAsync<MatchingRoutesOptions> = async (
 ) => {
   const { db, config } = options;
   const repository = new SpatialCandidateRepository(db);
-  const service = options.service ?? new MatchingService(repository);
+  const auditService = options.auditService ?? new AuditService(db, config);
+  const service = options.service ?? new MatchingService(repository, auditService);
   const controller = new MatchingController(service);
 
   const authenticate = createAuthenticateGuard(db, config);
 
-  // GET /v1/requests/:id/matching (hospital owner or admin)
+  // 1. GET /v1/requests/:id/matching (hospital owner or admin)
   app.get<{
     Params: MatchingParams;
   }>(
@@ -46,9 +54,9 @@ export const matchingRoutes: FastifyPluginAsync<MatchingRoutesOptions> = async (
       preHandler: [authenticate, authorize('hospital', 'admin')],
       schema: {
         tags: ['Matching'],
-        summary: 'Inspect anonymized matching status and candidates (Hospital owner / Admin)',
+        summary: 'Inspect matching status and candidates with consent reveal (Hospital owner / Admin)',
         description:
-          'Returns run summary, candidate counts, and anonymized candidate ranks with approximate distance bands. No coordinates, full names, or phone numbers.',
+          'Returns run summary, candidate counts, and candidate ranks with approximate distance bands. Reveals name and phone strictly for accepted donors.',
         params: matchingParamsSchema,
         response: {
           200: matchingStatusResponseSchema
@@ -56,5 +64,32 @@ export const matchingRoutes: FastifyPluginAsync<MatchingRoutesOptions> = async (
       }
     },
     controller.getStatus
+  );
+
+  // 2. POST /v1/requests/:id/respond (donor only)
+  app.post<{
+    Params: MatchingParams;
+    Body: RespondRequestBody;
+  }>(
+    '/:id/respond',
+    {
+      config: {
+        auth: true,
+        roles: ['donor']
+      },
+      preHandler: [authenticate, authorize('donor')],
+      schema: {
+        tags: ['Matching'],
+        summary: 'Donor response to emergency blood request (accept/decline)',
+        description:
+          'Records voluntary donor acceptance or decline. Enforces idempotency and triggers fulfillment transition if target units are met.',
+        params: matchingParamsSchema,
+        body: respondRequestBodySchema,
+        response: {
+          200: respondRequestResponseSchema
+        }
+      }
+    },
+    controller.respond
   );
 };
