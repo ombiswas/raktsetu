@@ -7,7 +7,7 @@
  * - NEVER selects donor latitude or longitude coordinates into application memory.
  */
 
-import { sql, eq, and, inArray, desc } from 'drizzle-orm';
+import { sql, eq, and, inArray, desc, isNull } from 'drizzle-orm';
 import type { DatabaseInstance } from '../../../platform/database/connection.js';
 import {
   donors,
@@ -15,6 +15,7 @@ import {
   bloodRequests,
   matchRuns,
   matchCandidates,
+  donations,
   type GeoPoint
 } from '../../../platform/database/schema.js';
 import type { BloodGroup } from '../domain/compatibility.js';
@@ -65,9 +66,10 @@ export interface PersistCandidateInput {
   rank: number;
   score: number;
   distanceMeters: number;
-  travelSeconds?: number | null;
-  pResponse?: number | null;
-  batchNo?: number;
+  travelSeconds?: number | null | undefined;
+  pResponse?: number | null | undefined;
+  batchNo?: number | undefined;
+  notifiedAt?: Date | null | undefined;
 }
 
 export interface MatchRunRecord {
@@ -98,6 +100,34 @@ export interface MatchCandidateRecord {
   bloodGroup?: BloodGroup;
 }
 
+export interface DonorHistoryForFeatures {
+  donations: Array<{ id: string; createdAt: Date }>;
+  candidateHistory: Array<{
+    id: string;
+    notifiedAt: Date | null;
+    respondedAt: Date | null;
+    response: 'pending' | 'accepted' | 'declined' | 'no_response';
+  }>;
+}
+
+export interface DonorResponseResult {
+  candidateId: string;
+  donorId: string;
+  requestId: string;
+  response: 'accepted' | 'declined';
+  isFulfilled: boolean;
+  acceptedCount: number;
+  unitsRequired: number;
+}
+
+export interface AcceptedCandidateContact {
+  candidateId: string;
+  donorId: string;
+  firstName: string;
+  phone: string;
+  email: string;
+}
+
 export interface ISpatialCandidateRepository {
   findCandidatesWithinRadius(query: SpatialCandidateQuery): Promise<CandidateSpatialRecord[]>;
   findRequestById(requestId: string): Promise<BloodRequestLookup | null>;
@@ -107,6 +137,19 @@ export interface ISpatialCandidateRepository {
   ): Promise<{ run: MatchRunRecord; candidateCount: number }>;
   findLatestRunByRequestId(requestId: string): Promise<MatchRunRecord | null>;
   findCandidatesByRunId(runId: string): Promise<MatchCandidateRecord[]>;
+  findDonorHistoryForFeatures(donorId: string, asOfDate: Date): Promise<DonorHistoryForFeatures>;
+  findCandidateByRequestAndDonor(requestId: string, donorId: string): Promise<MatchCandidateRecord | null>;
+  recordDonorResponse(
+    candidateId: string,
+    action: 'accepted' | 'declined',
+    asOfDate?: Date
+  ): Promise<DonorResponseResult>;
+  markBatchPendingAsNoResponse(runId: string, batchNo: number, asOfDate?: Date): Promise<number>;
+  findUnnotifiedCandidatesInRun(runId: string, limit: number): Promise<MatchCandidateRecord[]>;
+  markCandidatesNotified(candidateIds: string[], batchNo: number, notifiedAt: Date): Promise<void>;
+  countAcceptedCandidatesForRequest(requestId: string): Promise<number>;
+  findAcceptedCandidateContact(requestId: string, candidateId: string): Promise<AcceptedCandidateContact | null>;
+  appendCandidatesToRun(runId: string, candidates: PersistCandidateInput[]): Promise<number>;
 }
 
 export class SpatialCandidateRepository implements ISpatialCandidateRepository {
@@ -250,6 +293,7 @@ export class SpatialCandidateRepository implements ISpatialCandidateRepository {
             distanceM: c.distanceMeters,
             travelSeconds: c.travelSeconds ?? null,
             batchNo: c.batchNo ?? 1,
+            notifiedAt: c.notifiedAt ?? null,
             response: 'pending' as const
           }))
         );
@@ -361,5 +405,345 @@ export class SpatialCandidateRepository implements ISpatialCandidateRepository {
       createdAt: r.createdAt,
       bloodGroup: r.bloodGroup as BloodGroup
     }));
+  }
+
+  public async findDonorHistoryForFeatures(
+    donorId: string,
+    asOfDate: Date
+  ): Promise<DonorHistoryForFeatures> {
+    const donationRows = await this.db
+      .select({ id: donations.id, createdAt: donations.createdAt })
+      .from(donations)
+      .where(and(eq(donations.donorId, donorId), sql`${donations.createdAt} < ${asOfDate}`))
+      .orderBy(desc(donations.createdAt));
+
+    const candidateRows = await this.db
+      .select({
+        id: matchCandidates.id,
+        notifiedAt: matchCandidates.notifiedAt,
+        respondedAt: matchCandidates.respondedAt,
+        response: matchCandidates.response
+      })
+      .from(matchCandidates)
+      .where(
+        and(
+          eq(matchCandidates.donorId, donorId),
+          sql`${matchCandidates.notifiedAt} IS NOT NULL AND ${matchCandidates.notifiedAt} < ${asOfDate}`
+        )
+      )
+      .orderBy(desc(matchCandidates.notifiedAt));
+
+    return {
+      donations: donationRows,
+      candidateHistory: candidateRows.map((r) => ({
+        id: r.id,
+        notifiedAt: r.notifiedAt,
+        respondedAt: r.respondedAt,
+        response: r.response as 'pending' | 'accepted' | 'declined' | 'no_response'
+      }))
+    };
+  }
+
+  public async findCandidateByRequestAndDonor(
+    requestId: string,
+    donorId: string
+  ): Promise<MatchCandidateRecord | null> {
+    const [row] = await this.db
+      .select({
+        id: matchCandidates.id,
+        runId: matchCandidates.runId,
+        donorId: matchCandidates.donorId,
+        rank: matchCandidates.rank,
+        score: matchCandidates.score,
+        pResponse: matchCandidates.pResponse,
+        distanceM: matchCandidates.distanceM,
+        travelSeconds: matchCandidates.travelSeconds,
+        batchNo: matchCandidates.batchNo,
+        notifiedAt: matchCandidates.notifiedAt,
+        response: matchCandidates.response,
+        respondedAt: matchCandidates.respondedAt,
+        createdAt: matchCandidates.createdAt,
+        bloodGroup: donors.bloodGroup
+      })
+      .from(matchCandidates)
+      .innerJoin(matchRuns, eq(matchCandidates.runId, matchRuns.id))
+      .innerJoin(donors, eq(matchCandidates.donorId, donors.userId))
+      .where(and(eq(matchRuns.requestId, requestId), eq(matchCandidates.donorId, donorId)))
+      .orderBy(desc(matchRuns.createdAt))
+      .limit(1);
+
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      runId: row.runId,
+      donorId: row.donorId,
+      rank: row.rank,
+      score: row.score,
+      pResponse: row.pResponse,
+      distanceM: row.distanceM,
+      travelSeconds: row.travelSeconds,
+      batchNo: row.batchNo,
+      notifiedAt: row.notifiedAt,
+      response: row.response as 'pending' | 'accepted' | 'declined' | 'no_response',
+      respondedAt: row.respondedAt,
+      createdAt: row.createdAt,
+      bloodGroup: row.bloodGroup as BloodGroup
+    };
+  }
+
+  public async recordDonorResponse(
+    candidateId: string,
+    action: 'accepted' | 'declined',
+    asOfDate?: Date
+  ): Promise<DonorResponseResult> {
+    const timestamp = asOfDate ?? new Date();
+
+    const executor =
+      typeof this.db.transaction === 'function'
+        ? this.db.transaction.bind(this.db)
+        : async <T>(fn: (tx: DatabaseInstance) => Promise<T>): Promise<T> => fn(this.db);
+
+    return executor(async (tx) => {
+      // 1. Update candidate row
+      const [candidate] = await tx
+        .update(matchCandidates)
+        .set({
+          response: action,
+          respondedAt: timestamp
+        })
+        .where(eq(matchCandidates.id, candidateId))
+        .returning();
+
+      if (!candidate) {
+        throw new Error(`Candidate '${candidateId}' not found for response update`);
+      }
+
+      // 2. Fetch associated match run and blood request
+      const [run] = await tx
+        .select({ requestId: matchRuns.requestId })
+        .from(matchRuns)
+        .where(eq(matchRuns.id, candidate.runId))
+        .limit(1);
+
+      if (!run) {
+        throw new Error(`Match run for candidate '${candidateId}' not found`);
+      }
+
+      const [request] = await tx
+        .select({
+          id: bloodRequests.id,
+          status: bloodRequests.status,
+          unitsRequired: bloodRequests.unitsRequired
+        })
+        .from(bloodRequests)
+        .where(eq(bloodRequests.id, run.requestId))
+        .limit(1);
+
+      if (!request) {
+        throw new Error(`Blood request '${run.requestId}' not found`);
+      }
+
+      // 3. Count total accepted candidates across runs for this request
+      const [acceptedCountRow] = await tx
+        .select({ count: sql<number>`count(*)::int` })
+        .from(matchCandidates)
+        .innerJoin(matchRuns, eq(matchCandidates.runId, matchRuns.id))
+        .where(
+          and(
+            eq(matchRuns.requestId, request.id),
+            eq(matchCandidates.response, 'accepted')
+          )
+        );
+
+      const acceptedCount = acceptedCountRow?.count ?? 0;
+      let isFulfilled = false;
+
+      // 4. If target units reached, transition request to 'fulfilled'
+      if (acceptedCount >= request.unitsRequired && request.status !== 'fulfilled') {
+        await tx
+          .update(bloodRequests)
+          .set({
+            status: 'fulfilled',
+            updatedAt: timestamp
+          })
+          .where(eq(bloodRequests.id, request.id));
+        isFulfilled = true;
+      }
+
+      return {
+        candidateId: candidate.id,
+        donorId: candidate.donorId,
+        requestId: request.id,
+        response: action,
+        isFulfilled,
+        acceptedCount,
+        unitsRequired: request.unitsRequired
+      };
+    });
+  }
+
+  public async markBatchPendingAsNoResponse(
+    runId: string,
+    batchNo: number,
+    asOfDate?: Date
+  ): Promise<number> {
+    const timestamp = asOfDate ?? new Date();
+
+    const result = await this.db
+      .update(matchCandidates)
+      .set({
+        response: 'no_response',
+        respondedAt: timestamp
+      })
+      .where(
+        and(
+          eq(matchCandidates.runId, runId),
+          eq(matchCandidates.batchNo, batchNo),
+          eq(matchCandidates.response, 'pending')
+        )
+      )
+      .returning({ id: matchCandidates.id });
+
+    return result.length;
+  }
+
+  public async findUnnotifiedCandidatesInRun(
+    runId: string,
+    limit: number
+  ): Promise<MatchCandidateRecord[]> {
+    const rows = await this.db
+      .select({
+        id: matchCandidates.id,
+        runId: matchCandidates.runId,
+        donorId: matchCandidates.donorId,
+        rank: matchCandidates.rank,
+        score: matchCandidates.score,
+        pResponse: matchCandidates.pResponse,
+        distanceM: matchCandidates.distanceM,
+        travelSeconds: matchCandidates.travelSeconds,
+        batchNo: matchCandidates.batchNo,
+        notifiedAt: matchCandidates.notifiedAt,
+        response: matchCandidates.response,
+        respondedAt: matchCandidates.respondedAt,
+        createdAt: matchCandidates.createdAt,
+        bloodGroup: donors.bloodGroup
+      })
+      .from(matchCandidates)
+      .innerJoin(donors, eq(matchCandidates.donorId, donors.userId))
+      .where(and(eq(matchCandidates.runId, runId), isNull(matchCandidates.notifiedAt)))
+      .orderBy(matchCandidates.rank)
+      .limit(limit);
+
+    return rows.map((r) => ({
+      id: r.id,
+      runId: r.runId,
+      donorId: r.donorId,
+      rank: r.rank,
+      score: r.score,
+      pResponse: r.pResponse,
+      distanceM: r.distanceM,
+      travelSeconds: r.travelSeconds,
+      batchNo: r.batchNo,
+      notifiedAt: r.notifiedAt,
+      response: r.response as 'pending' | 'accepted' | 'declined' | 'no_response',
+      respondedAt: r.respondedAt,
+      createdAt: r.createdAt,
+      bloodGroup: r.bloodGroup as BloodGroup
+    }));
+  }
+
+  public async markCandidatesNotified(
+    candidateIds: string[],
+    batchNo: number,
+    notifiedAt: Date
+  ): Promise<void> {
+    if (candidateIds.length === 0) return;
+
+    await this.db
+      .update(matchCandidates)
+      .set({
+        batchNo,
+        notifiedAt
+      })
+      .where(inArray(matchCandidates.id, candidateIds));
+  }
+
+  public async countAcceptedCandidatesForRequest(requestId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(matchCandidates)
+      .innerJoin(matchRuns, eq(matchCandidates.runId, matchRuns.id))
+      .where(
+        and(
+          eq(matchRuns.requestId, requestId),
+          eq(matchCandidates.response, 'accepted')
+        )
+      );
+
+    return row?.count ?? 0;
+  }
+
+  public async findAcceptedCandidateContact(
+    requestId: string,
+    candidateId: string
+  ): Promise<AcceptedCandidateContact | null> {
+    const [row] = await this.db
+      .select({
+        candidateId: matchCandidates.id,
+        donorId: matchCandidates.donorId,
+        fullName: donors.fullName,
+        phone: donors.phone,
+        email: users.email,
+        response: matchCandidates.response
+      })
+      .from(matchCandidates)
+      .innerJoin(matchRuns, eq(matchCandidates.runId, matchRuns.id))
+      .innerJoin(donors, eq(matchCandidates.donorId, donors.userId))
+      .innerJoin(users, eq(donors.userId, users.id))
+      .where(
+        and(
+          eq(matchRuns.requestId, requestId),
+          eq(matchCandidates.id, candidateId),
+          eq(matchCandidates.response, 'accepted')
+        )
+      )
+      .limit(1);
+
+    if (!row || !row.fullName) return null;
+
+    const fullName = (row.fullName as string).trim();
+    const firstName = fullName.split(/\s+/)[0] || fullName;
+
+    return {
+      candidateId: row.candidateId,
+      donorId: row.donorId,
+      firstName,
+      phone: row.phone,
+      email: row.email
+    };
+  }
+
+  public async appendCandidatesToRun(
+    runId: string,
+    candidates: PersistCandidateInput[]
+  ): Promise<number> {
+    if (candidates.length === 0) return 0;
+
+    await this.db.insert(matchCandidates).values(
+      candidates.map((c) => ({
+        runId,
+        donorId: c.donorId,
+        rank: c.rank,
+        score: c.score,
+        pResponse: c.pResponse ?? null,
+        distanceM: c.distanceMeters,
+        travelSeconds: c.travelSeconds ?? null,
+        batchNo: c.batchNo ?? 1,
+        response: 'pending' as const
+      }))
+    );
+
+    return candidates.length;
   }
 }

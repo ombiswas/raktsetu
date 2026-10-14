@@ -46,6 +46,9 @@ export const envSchema = z
     VAPID_PUBLIC_KEY: z.string().optional(),
     VAPID_PRIVATE_KEY: z.string().optional(),
     VAPID_SUBJECT: z.string().default('mailto:admin@raktsetu.internal'),
+    MATCHING_ALGORITHM: z.enum(['baseline', 'hybrid']).default('hybrid'),
+    MATCHING_BATCH_SIZE: z.coerce.number().int().positive().default(5),
+    MATCHING_BATCH_WINDOW_SECONDS: z.coerce.number().int().positive().default(300),
     EMAIL_PROVIDER: z.enum(['mock', 'resend', 'brevo']).default('mock'),
     EMAIL_API_KEY: z.string().optional(),
     LOG_LEVEL: z

@@ -34,9 +34,21 @@ import {
   matchingRoutes,
   SpatialCandidateRepository,
   ProximityRanker,
+  HybridRanker,
+  HttpMlClient,
   CreateMatchRunUseCase,
   registerRequestCreatedMatchingSubscriber
 } from './modules/matching/index.js';
+import {
+  notificationsRoutes,
+  NotificationsService,
+  NotificationsRepository,
+  ConsoleMailer,
+  ResendMailer,
+  BrevoMailer,
+  DefaultWebPushClient,
+  type Mailer
+} from './modules/notifications/index.js';
 
 export interface AppDependencies {
   config?: Config;
@@ -182,6 +194,30 @@ export async function buildApp(deps: Partial<AppDependencies> = {}): Promise<Fas
     config: cfg
   });
 
+  // Notifications Module routes
+  const notificationsRepo = new NotificationsRepository(dbInstance);
+  let mailer: Mailer = new ConsoleMailer();
+  if (cfg.EMAIL_PROVIDER === 'resend' && cfg.EMAIL_API_KEY) {
+    mailer = new ResendMailer(cfg.EMAIL_API_KEY);
+  } else if (cfg.EMAIL_PROVIDER === 'brevo' && cfg.EMAIL_API_KEY) {
+    mailer = new BrevoMailer(cfg.EMAIL_API_KEY);
+  }
+
+  const webPushClient = new DefaultWebPushClient({
+    publicKey: cfg.VAPID_PUBLIC_KEY,
+    privateKey: cfg.VAPID_PRIVATE_KEY,
+    subject: cfg.VAPID_SUBJECT
+  });
+
+  const notificationsService = new NotificationsService(notificationsRepo, mailer, webPushClient);
+
+  await app.register(notificationsRoutes, {
+    prefix: '/v1/notifications',
+    db: dbInstance,
+    config: cfg,
+    service: notificationsService
+  });
+
   // Matching Module routes
   await app.register(matchingRoutes, {
     prefix: '/v1/requests',
@@ -191,8 +227,27 @@ export async function buildApp(deps: Partial<AppDependencies> = {}): Promise<Fas
 
   // Automated Matching Subscriber on RequestCreated event
   const matchingRepo = new SpatialCandidateRepository(dbInstance);
-  const baselineRanker = new ProximityRanker();
-  const createMatchRunUseCase = new CreateMatchRunUseCase(matchingRepo, baselineRanker);
+  const mlClient = new HttpMlClient({
+    baseUrl: cfg.ML_SERVICE_URL,
+    token: cfg.ML_SERVICE_TOKEN
+  });
+  const selectedRanker =
+    cfg.MATCHING_ALGORITHM === 'hybrid' ? new HybridRanker() : new ProximityRanker();
+
+  const createMatchRunUseCase = new CreateMatchRunUseCase(
+    matchingRepo,
+    selectedRanker,
+    undefined,
+    undefined,
+    {
+      responsePredictor: mlClient,
+      notificationsService,
+      batchSize: cfg.MATCHING_BATCH_SIZE,
+      batchWindowSeconds: cfg.MATCHING_BATCH_WINDOW_SECONDS,
+      logger: app.log
+    }
+  );
+
   const unsubscribeMatching = registerRequestCreatedMatchingSubscriber(
     requestEventBus,
     createMatchRunUseCase,
