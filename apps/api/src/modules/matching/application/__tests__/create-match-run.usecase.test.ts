@@ -84,7 +84,24 @@ describe('CreateMatchRunUseCase Application Layer', () => {
         }
       ),
       findLatestRunByRequestId: vi.fn().mockResolvedValue(null),
-      findCandidatesByRunId: vi.fn().mockResolvedValue([] as MatchCandidateRecord[])
+      findCandidatesByRunId: vi.fn().mockResolvedValue([] as MatchCandidateRecord[]),
+      findDonorHistoryForFeatures: vi.fn().mockResolvedValue({ donations: [], candidateHistory: [] }),
+      findCandidateByRequestAndDonor: vi.fn().mockResolvedValue(null),
+      recordDonorResponse: vi.fn().mockResolvedValue({
+        candidateId: 'cand-1',
+        donorId: 'd-1',
+        requestId: validRequest.id,
+        response: 'accepted',
+        isFulfilled: false,
+        acceptedCount: 1,
+        unitsRequired: 2
+      }),
+      markBatchPendingAsNoResponse: vi.fn().mockResolvedValue(0),
+      findUnnotifiedCandidatesInRun: vi.fn().mockResolvedValue([]),
+      markCandidatesNotified: vi.fn().mockResolvedValue(undefined),
+      countAcceptedCandidatesForRequest: vi.fn().mockResolvedValue(0),
+      findAcceptedCandidateContact: vi.fn().mockResolvedValue(null),
+      appendCandidatesToRun: vi.fn().mockResolvedValue(0)
     };
 
     return { repo, persistedRuns, persistedCandidates };
@@ -256,4 +273,133 @@ describe('CreateMatchRunUseCase Application Layer', () => {
       }
     });
   });
+
+  describe('ML Integration, Degradation Fallback & Batch Notifications', () => {
+    it('falls back gracefully to ProximityRanker and sets degraded=true when ML service is down', async () => {
+      const candidates = [
+        createEligibleCandidate('d-1', 'O+', 3000),
+        createEligibleCandidate('d-2', 'O+', 5000)
+      ];
+      const { repo, persistedRuns, persistedCandidates } = createMockRepo(() => candidates);
+
+      const mockPredictor = {
+        predictBatch: vi.fn().mockResolvedValue({
+          isAvailable: false,
+          reason: 'Circuit breaker is OPEN: ML service connection timeout'
+        })
+      };
+
+      const { HybridRanker } = await import('../../domain/hybrid-ranker.js');
+      const useCase = new CreateMatchRunUseCase(
+        repo,
+        new HybridRanker(),
+        undefined,
+        undefined,
+        {
+          responsePredictor: mockPredictor
+        }
+      );
+
+      const result = await useCase.execute({ requestId: validRequest.id, asOfDate });
+
+      expect(result.candidateCount).toBe(2);
+      expect(persistedRuns).toHaveLength(1);
+      expect(persistedRuns[0]!.degraded).toBe(true);
+      expect(persistedRuns[0]!.algorithm).toBe('hybrid'); // strategy recorded in match_runs, degraded=true indicates fallback
+      expect(persistedCandidates).toHaveLength(2);
+    });
+
+    it('successfully scores candidates with HybridRanker when ML predictions succeed', async () => {
+      const candidates = [
+        createEligibleCandidate('d-1', 'O+', 3000),
+        createEligibleCandidate('d-2', 'O+', 5000)
+      ];
+      const { repo, persistedRuns, persistedCandidates } = createMockRepo(() => candidates);
+
+      const predictionsMap = new Map<string, number>([
+        ['d-1', 0.85],
+        ['d-2', 0.40]
+      ]);
+
+      const mockPredictor = {
+        predictBatch: vi.fn().mockResolvedValue({
+          isAvailable: true,
+          predictions: predictionsMap,
+          modelVersion: 'v1.0.0-xgb'
+        })
+      };
+
+      const { HybridRanker } = await import('../../domain/hybrid-ranker.js');
+      const useCase = new CreateMatchRunUseCase(
+        repo,
+        new HybridRanker(),
+        undefined,
+        undefined,
+        {
+          responsePredictor: mockPredictor
+        }
+      );
+
+      const result = await useCase.execute({ requestId: validRequest.id, asOfDate });
+
+      expect(result.candidateCount).toBe(2);
+      expect(persistedRuns[0]!.degraded).toBe(false);
+      expect(persistedRuns[0]!.algorithm).toBe('hybrid');
+      expect(persistedRuns[0]!.modelVersion).toBe('v1.0.0-xgb');
+
+      // Rank 1 candidate should have the ML prediction and hybrid score recorded
+      expect(persistedCandidates[0]!.pResponse).toBe(0.85);
+      expect(persistedCandidates[0]!.score).toBeGreaterThan(0);
+    });
+
+    it('assigns batchNo: 1 to top K candidates and dispatches alerts via NotificationsService', async () => {
+      const candidates = [
+        createEligibleCandidate('d-1', 'O+', 2000),
+        createEligibleCandidate('d-2', 'O+', 3000),
+        createEligibleCandidate('d-3', 'O+', 4000),
+        createEligibleCandidate('d-4', 'O+', 5000)
+      ];
+      const { repo, persistedCandidates } = createMockRepo(() => candidates);
+
+      const mockNotifyDonor = vi.fn().mockResolvedValue({
+        id: 'notif-1',
+        userId: 'd-1',
+        kind: 'donor_match_alert',
+        payload: {},
+        readAt: null,
+        createdAt: new Date().toISOString()
+      });
+
+      const mockNotificationsService = {
+        notifyDonor: mockNotifyDonor
+      } as unknown as import('../../../notifications/notifications.service.js').NotificationsService;
+
+      const useCase = new CreateMatchRunUseCase(
+        repo,
+        new ProximityRanker(),
+        undefined,
+        undefined,
+        {
+          notificationsService: mockNotificationsService,
+          batchSize: 2
+        }
+      );
+
+      const result = await useCase.execute({ requestId: validRequest.id, asOfDate });
+
+      expect(result.notifiedCount).toBe(2);
+      expect(mockNotifyDonor).toHaveBeenCalledTimes(2);
+
+      // Verify batch 1 assignment on top 2 candidates
+      const batch1Candidates = persistedCandidates.filter((c) => c.batchNo === 1);
+      expect(batch1Candidates).toHaveLength(2);
+      expect(batch1Candidates.every((c) => c.notifiedAt !== null && c.notifiedAt !== undefined)).toBe(true);
+
+      // Remaining candidates are in unnotified backlog (batchNo: 0, notifiedAt: null)
+      const backlog = persistedCandidates.filter((c) => c.batchNo === 0);
+      expect(backlog).toHaveLength(2);
+      expect(backlog.every((c) => !c.notifiedAt)).toBe(true);
+    });
+  });
 });
+
