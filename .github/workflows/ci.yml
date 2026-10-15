@@ -1,4 +1,4 @@
-name: CI
+name: CI & Release Pipeline
 
 on:
   push:
@@ -32,8 +32,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Unit Tests
+      - name: Unit & Security Fuzz Tests
         run: npm run test:unit
+
+      - name: Route Registry Security Audit
+        run: npx vitest run tests/integration/route-registry.test.ts
+
+      - name: Dependency Security Audit
+        run: npm audit --omit=dev
 
   web:
     name: Web (React 19 + Vite)
@@ -60,8 +66,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Tests
+        run: npm test
+
       - name: Build
         run: npm run build
+
+      - name: Dependency Security Audit
+        run: npm audit --omit=dev
 
   ml:
     name: ML Service (Python 3.12 + FastAPI)
@@ -91,3 +103,72 @@ jobs:
 
       - name: Pytest
         run: pytest
+
+  security-audit:
+    name: Secret Leak & History Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for audit
+
+      - name: Verify design.md was never committed
+        run: |
+          COMMITS=$(git log --all -- design.md)
+          if [ -n "$COMMITS" ]; then
+            echo "ERROR: design.md was committed in git history!"
+            exit 1
+          fi
+          echo "design.md history is clean."
+
+      - name: Verify .env files were never committed
+        run: |
+          COMMITS=$(git log --all -- .env)
+          if [ -n "$COMMITS" ]; then
+            echo "ERROR: .env was committed in git history!"
+            exit 1
+          fi
+          echo ".env history is clean."
+
+  migration-release:
+    name: PostGIS Migration & Seed Step
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: raktsetu
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Execute PostGIS Release Migration Step
+        env:
+          DATABASE_URL: postgres://postgres:postgrespassword@localhost:5432/raktsetu
+        run: npm run db:release
+
+      - name: Execute Database Seed Step
+        env:
+          DATABASE_URL: postgres://postgres:postgrespassword@localhost:5432/raktsetu
+        run: npm run db:seed

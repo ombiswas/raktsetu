@@ -1,0 +1,62 @@
+# Render Infrastructure as Code Blueprint
+# Free-Tier Deployment for RaktSetu API and ML Service
+
+services:
+  # 1. Node.js API Web Service
+  - type: web
+    name: raktsetu-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: apps/api
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npm run db:release
+    startCommand: npm start
+    healthCheckPath: /health/ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: true
+      - key: CORS_ORIGINS
+        value: https://raktsetu.vercel.app
+      - key: MATCHING_ALGORITHM
+        value: hybrid
+      - key: DB_POOL_MAX
+        value: 10
+      - key: DB_IDLE_TIMEOUT_MS
+        value: 30000
+      - key: DB_STATEMENT_TIMEOUT_MS
+        value: 10000
+      - key: DATABASE_URL
+        sync: false # Set in Render Dashboard from Neon PostgreSQL connection string
+      - key: JWT_ACCESS_SECRET
+        sync: false # Set in Render Dashboard (minimum 32 characters)
+      - key: COOKIE_SECRET
+        sync: false # Set in Render Dashboard (minimum 32 characters)
+      - key: ML_SERVICE_URL
+        value: http://raktsetu-ml:8000
+      - key: ML_SERVICE_TOKEN
+        sync: false # Set in Render Dashboard (shared secret token)
+
+  # 2. Python ML Microservice
+  - type: web
+    name: raktsetu-ml
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: services/ml
+    buildCommand: pip install uv && uv sync
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: HOST
+        value: 0.0.0.0
+      - key: INTERNAL_API_TOKEN
+        sync: false # Set in Render Dashboard (must match ML_SERVICE_TOKEN in API)
