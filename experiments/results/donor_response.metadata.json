@@ -1,0 +1,14 @@
+{
+  "simulation": true,
+  "disclaimer": "SIMULATION PROTOTYPE: Academic research synthetic dataset. Not clinical data.",
+  "seed": 42,
+  "config_hash": "79c2cb3d0bb3b53c1f1a5d8fa1392aa25b347c7beb4bff2f7cabc7e061b4ea7f",
+  "generator_version": "1.0.0",
+  "generated_at": "2026-10-14T05:06:40.752Z",
+  "num_records": 10242,
+  "summary_metrics": {
+    "positive_responses": 6392,
+    "positive_response_rate": 0.6241,
+    "mean_distance_km": 3.51
+  }
+}

@@ -1,0 +1,555 @@
+{
+  "simulation": true,
+  "disclaimer": "SIMULATION PROTOTYPE: Academic benchmark results. Not clinical data.",
+  "seed": 42,
+  "numSeeds": 30,
+  "configHash": "79c2cb3d0bb3b53c1f1a5d8fa1392aa25b347c7beb4bff2f7cabc7e061b4ea7f",
+  "executedAt": "2026-10-15T17:36:58.940Z",
+  "requestCount": 29787,
+  "strategySummaries": {
+    "baseline_proximity": {
+      "strategy": "baseline_proximity",
+      "totalRequests": 29787,
+      "fulfillmentRate": {
+        "mean": 0.8117,
+        "stdDev": 0.391,
+        "ci95Lower": 0.8074,
+        "ci95Upper": 0.8161,
+        "median": 1
+      },
+      "donorsContacted": {
+        "mean": 4.9887,
+        "stdDev": 2.8896,
+        "ci95Lower": 4.9536,
+        "ci95Upper": 5.0217,
+        "median": 5
+      },
+      "topKResponseRate": {
+        "mean": 0.5012,
+        "stdDev": 0.3118,
+        "ci95Lower": 0.4976,
+        "ci95Upper": 0.5045,
+        "median": 0.6
+      },
+      "timeToFirstAcceptSec": {
+        "mean": 73.667,
+        "stdDev": 67.0164,
+        "ci95Lower": 72.8696,
+        "ci95Upper": 74.5058,
+        "median": 53
+      },
+      "timeToFulfillmentSec": {
+        "mean": 152.7699,
+        "stdDev": 143.0566,
+        "ci95Lower": 150.9959,
+        "ci95Upper": 154.5594,
+        "median": 95
+      },
+      "meanDonorDistanceKm": {
+        "mean": 3.2291,
+        "stdDev": 7.2887,
+        "ci95Lower": 3.151,
+        "ci95Upper": 3.3129,
+        "median": 0.4886
+      },
+      "medianDonorDistanceKm": {
+        "mean": 3.2461,
+        "stdDev": 7.2828,
+        "ci95Lower": 3.1671,
+        "ci95Upper": 3.3316,
+        "median": 0.5182
+      },
+      "radiusExpansions": {
+        "mean": 0.4854,
+        "stdDev": 1.2976,
+        "ci95Lower": 0.4713,
+        "ci95Upper": 0.5007,
+        "median": 0
+      }
+    },
+    "hybrid_full": {
+      "strategy": "hybrid_full",
+      "totalRequests": 29787,
+      "fulfillmentRate": {
+        "mean": 0.8117,
+        "stdDev": 0.391,
+        "ci95Lower": 0.8074,
+        "ci95Upper": 0.8161,
+        "median": 1
+      },
+      "donorsContacted": {
+        "mean": 4.8847,
+        "stdDev": 2.7559,
+        "ci95Lower": 4.8513,
+        "ci95Upper": 4.9163,
+        "median": 5
+      },
+      "topKResponseRate": {
+        "mean": 0.5191,
+        "stdDev": 0.3165,
+        "ci95Lower": 0.5154,
+        "ci95Upper": 0.5227,
+        "median": 0.6
+      },
+      "timeToFirstAcceptSec": {
+        "mean": 72.3108,
+        "stdDev": 64.4337,
+        "ci95Lower": 71.5378,
+        "ci95Upper": 73.1339,
+        "median": 53
+      },
+      "timeToFulfillmentSec": {
+        "mean": 145.0312,
+        "stdDev": 135.2677,
+        "ci95Lower": 143.4923,
+        "ci95Upper": 146.7631,
+        "median": 93
+      },
+      "meanDonorDistanceKm": {
+        "mean": 3.6014,
+        "stdDev": 7.156,
+        "ci95Lower": 3.5236,
+        "ci95Upper": 3.6833,
+        "median": 0.9827
+      },
+      "medianDonorDistanceKm": {
+        "mean": 3.5871,
+        "stdDev": 7.1617,
+        "ci95Lower": 3.5086,
+        "ci95Upper": 3.6722,
+        "median": 0.9427
+      },
+      "radiusExpansions": {
+        "mean": 0.4854,
+        "stdDev": 1.2976,
+        "ci95Lower": 0.4713,
+        "ci95Upper": 0.5007,
+        "median": 0
+      }
+    },
+    "ablation_ml_only": {
+      "strategy": "ablation_ml_only",
+      "totalRequests": 29787,
+      "fulfillmentRate": {
+        "mean": 0.8117,
+        "stdDev": 0.3909,
+        "ci95Lower": 0.8074,
+        "ci95Upper": 0.8162,
+        "median": 1
+      },
+      "donorsContacted": {
+        "mean": 4.9007,
+        "stdDev": 2.7753,
+        "ci95Lower": 4.868,
+        "ci95Upper": 4.9322,
+        "median": 5
+      },
+      "topKResponseRate": {
+        "mean": 0.5172,
+        "stdDev": 0.3162,
+        "ci95Lower": 0.5136,
+        "ci95Upper": 0.521,
+        "median": 0.6
+      },
+      "timeToFirstAcceptSec": {
+        "mean": 72.1787,
+        "stdDev": 63.2935,
+        "ci95Lower": 71.3964,
+        "ci95Upper": 73.0336,
+        "median": 53
+      },
+      "timeToFulfillmentSec": {
+        "mean": 146.2132,
+        "stdDev": 136.8282,
+        "ci95Lower": 144.5394,
+        "ci95Upper": 147.8697,
+        "median": 93
+      },
+      "meanDonorDistanceKm": {
+        "mean": 3.883,
+        "stdDev": 7.0658,
+        "ci95Lower": 3.8064,
+        "ci95Upper": 3.9632,
+        "median": 1.316
+      },
+      "medianDonorDistanceKm": {
+        "mean": 3.886,
+        "stdDev": 7.0684,
+        "ci95Lower": 3.8086,
+        "ci95Upper": 3.9683,
+        "median": 1.2895
+      },
+      "radiusExpansions": {
+        "mean": 0.4854,
+        "stdDev": 1.2976,
+        "ci95Lower": 0.4713,
+        "ci95Upper": 0.5007,
+        "median": 0
+      }
+    },
+    "ablation_geo_only": {
+      "strategy": "ablation_geo_only",
+      "totalRequests": 29787,
+      "fulfillmentRate": {
+        "mean": 0.8117,
+        "stdDev": 0.391,
+        "ci95Lower": 0.8074,
+        "ci95Upper": 0.8161,
+        "median": 1
+      },
+      "donorsContacted": {
+        "mean": 4.9887,
+        "stdDev": 2.8896,
+        "ci95Lower": 4.9536,
+        "ci95Upper": 5.0217,
+        "median": 5
+      },
+      "topKResponseRate": {
+        "mean": 0.5012,
+        "stdDev": 0.3118,
+        "ci95Lower": 0.4976,
+        "ci95Upper": 0.5045,
+        "median": 0.6
+      },
+      "timeToFirstAcceptSec": {
+        "mean": 73.667,
+        "stdDev": 67.0164,
+        "ci95Lower": 72.8696,
+        "ci95Upper": 74.5058,
+        "median": 53
+      },
+      "timeToFulfillmentSec": {
+        "mean": 152.7699,
+        "stdDev": 143.0566,
+        "ci95Lower": 150.9959,
+        "ci95Upper": 154.5594,
+        "median": 95
+      },
+      "meanDonorDistanceKm": {
+        "mean": 3.2291,
+        "stdDev": 7.2887,
+        "ci95Lower": 3.151,
+        "ci95Upper": 3.3129,
+        "median": 0.4886
+      },
+      "medianDonorDistanceKm": {
+        "mean": 3.2461,
+        "stdDev": 7.2828,
+        "ci95Lower": 3.1671,
+        "ci95Upper": 3.3316,
+        "median": 0.5182
+      },
+      "radiusExpansions": {
+        "mean": 0.4854,
+        "stdDev": 1.2976,
+        "ci95Lower": 0.4713,
+        "ci95Upper": 0.5007,
+        "median": 0
+      }
+    }
+  },
+  "pairedComparisons": [
+    {
+      "metric": "Top-K Response Rate",
+      "baselineMean": 0.5012,
+      "hybridMean": 0.5191,
+      "meanDifference": 0.0179,
+      "ci95Lower": 0.0154,
+      "ci95Upper": 0.0204,
+      "interpretation": "Hybrid full improves Top-K response rate by +1.8%"
+    },
+    {
+      "metric": "Donors Contacted Before Fulfillment",
+      "baselineMean": 4.9887,
+      "hybridMean": 4.8847,
+      "meanDifference": -0.1039,
+      "ci95Lower": -0.1273,
+      "ci95Upper": -0.0787,
+      "interpretation": "Hybrid full contacts 0.10 fewer donors per emergency"
+    },
+    {
+      "metric": "Mean Contact Distance (km)",
+      "baselineMean": 3.2291,
+      "hybridMean": 3.6014,
+      "meanDifference": 0.3724,
+      "ci95Lower": 0.3691,
+      "ci95Upper": 0.3758,
+      "interpretation": "Trade-off: Hybrid prioritizes responsiveness over pure proximity (+0.37 km farther on average)"
+    },
+    {
+      "metric": "Time to First Acceptance (seconds)",
+      "baselineMean": 73.67,
+      "hybridMean": 72.31,
+      "meanDifference": -1.3562,
+      "ci95Lower": -2.2395,
+      "ci95Upper": -0.4937,
+      "interpretation": "Hybrid full achieves first acceptance 1.4s faster"
+    }
+  ],
+  "sensitivityResults": [
+    {
+      "parameter": "population_size",
+      "valueLabel": "600 donors",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.88,
+      "meanTimeToFirstAcceptSec": 70.1269,
+      "meanTimeToFulfillmentSec": 166.5833,
+      "meanDonorsContacted": 5.5267,
+      "meanDonorDistanceKm": 2.3372,
+      "topKResponseRate": 0.5262
+    },
+    {
+      "parameter": "population_size",
+      "valueLabel": "600 donors",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.88,
+      "meanTimeToFirstAcceptSec": 60.4701,
+      "meanTimeToFulfillmentSec": 152,
+      "meanDonorsContacted": 5.3267,
+      "meanDonorDistanceKm": 2.6199,
+      "topKResponseRate": 0.5342
+    },
+    {
+      "parameter": "population_size",
+      "valueLabel": "1200 donors",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 77.4615,
+      "meanTimeToFulfillmentSec": 145.7661,
+      "meanDonorsContacted": 5.24,
+      "meanDonorDistanceKm": 2.8729,
+      "topKResponseRate": 0.5527
+    },
+    {
+      "parameter": "population_size",
+      "valueLabel": "1200 donors",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 72.2,
+      "meanTimeToFulfillmentSec": 137.2903,
+      "meanDonorsContacted": 5.1067,
+      "meanDonorDistanceKm": 3.1803,
+      "topKResponseRate": 0.582
+    },
+    {
+      "parameter": "population_size",
+      "valueLabel": "2400 donors",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.88,
+      "meanTimeToFirstAcceptSec": 62.7037,
+      "meanTimeToFulfillmentSec": 146.2727,
+      "meanDonorsContacted": 5.4067,
+      "meanDonorDistanceKm": 3.0863,
+      "topKResponseRate": 0.5687
+    },
+    {
+      "parameter": "population_size",
+      "valueLabel": "2400 donors",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.88,
+      "meanTimeToFirstAcceptSec": 70.2444,
+      "meanTimeToFulfillmentSec": 146.2424,
+      "meanDonorsContacted": 5.2733,
+      "meanDonorDistanceKm": 3.3564,
+      "topKResponseRate": 0.5793
+    },
+    {
+      "parameter": "base_response_rate",
+      "valueLabel": "15% base",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 86.8062,
+      "meanTimeToFulfillmentSec": 175.2419,
+      "meanDonorsContacted": 5.54,
+      "meanDonorDistanceKm": 2.8827,
+      "topKResponseRate": 0.4913
+    },
+    {
+      "parameter": "base_response_rate",
+      "valueLabel": "15% base",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 78.6977,
+      "meanTimeToFulfillmentSec": 172.5726,
+      "meanDonorsContacted": 5.5067,
+      "meanDonorDistanceKm": 3.194,
+      "topKResponseRate": 0.514
+    },
+    {
+      "parameter": "base_response_rate",
+      "valueLabel": "30% base",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 77.4615,
+      "meanTimeToFulfillmentSec": 145.7661,
+      "meanDonorsContacted": 5.24,
+      "meanDonorDistanceKm": 2.8729,
+      "topKResponseRate": 0.5527
+    },
+    {
+      "parameter": "base_response_rate",
+      "valueLabel": "30% base",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 72.2,
+      "meanTimeToFulfillmentSec": 137.2903,
+      "meanDonorsContacted": 5.1067,
+      "meanDonorDistanceKm": 3.1803,
+      "topKResponseRate": 0.582
+    },
+    {
+      "parameter": "base_response_rate",
+      "valueLabel": "45% base",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8333,
+      "meanTimeToFirstAcceptSec": 64.2424,
+      "meanTimeToFulfillmentSec": 133.832,
+      "meanDonorsContacted": 5.1333,
+      "meanDonorDistanceKm": 2.8601,
+      "topKResponseRate": 0.614
+    },
+    {
+      "parameter": "base_response_rate",
+      "valueLabel": "45% base",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8333,
+      "meanTimeToFirstAcceptSec": 60.4167,
+      "meanTimeToFulfillmentSec": 128.088,
+      "meanDonorsContacted": 5,
+      "meanDonorDistanceKm": 3.1668,
+      "topKResponseRate": 0.6327
+    },
+    {
+      "parameter": "noise_level",
+      "valueLabel": "σ=0.05",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8333,
+      "meanTimeToFirstAcceptSec": 72.8692,
+      "meanTimeToFulfillmentSec": 147.392,
+      "meanDonorsContacted": 5.2667,
+      "meanDonorDistanceKm": 2.865,
+      "topKResponseRate": 0.5527
+    },
+    {
+      "parameter": "noise_level",
+      "valueLabel": "σ=0.05",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8333,
+      "meanTimeToFirstAcceptSec": 70.4846,
+      "meanTimeToFulfillmentSec": 140.856,
+      "meanDonorsContacted": 5.1333,
+      "meanDonorDistanceKm": 3.1736,
+      "topKResponseRate": 0.578
+    },
+    {
+      "parameter": "noise_level",
+      "valueLabel": "σ=0.20",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 77.4615,
+      "meanTimeToFulfillmentSec": 145.7661,
+      "meanDonorsContacted": 5.24,
+      "meanDonorDistanceKm": 2.8729,
+      "topKResponseRate": 0.5527
+    },
+    {
+      "parameter": "noise_level",
+      "valueLabel": "σ=0.20",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 72.2,
+      "meanTimeToFulfillmentSec": 137.2903,
+      "meanDonorsContacted": 5.1067,
+      "meanDonorDistanceKm": 3.1803,
+      "topKResponseRate": 0.582
+    },
+    {
+      "parameter": "noise_level",
+      "valueLabel": "σ=0.40",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 77.6462,
+      "meanTimeToFulfillmentSec": 154.5806,
+      "meanDonorsContacted": 5.3733,
+      "meanDonorDistanceKm": 2.8758,
+      "topKResponseRate": 0.55
+    },
+    {
+      "parameter": "noise_level",
+      "valueLabel": "σ=0.40",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 72.9077,
+      "meanTimeToFulfillmentSec": 146.9274,
+      "meanDonorsContacted": 5.2067,
+      "meanDonorDistanceKm": 3.1834,
+      "topKResponseRate": 0.57
+    },
+    {
+      "parameter": "urgency_mix",
+      "valueLabel": "Critical-Heavy (60/30/10)",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 73.5538,
+      "meanTimeToFulfillmentSec": 141.0806,
+      "meanDonorsContacted": 5.1733,
+      "meanDonorDistanceKm": 2.8696,
+      "topKResponseRate": 0.5727
+    },
+    {
+      "parameter": "urgency_mix",
+      "valueLabel": "Critical-Heavy (60/30/10)",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 70.1769,
+      "meanTimeToFulfillmentSec": 134.0403,
+      "meanDonorsContacted": 5.04,
+      "meanDonorDistanceKm": 3.179,
+      "topKResponseRate": 0.594
+    },
+    {
+      "parameter": "urgency_mix",
+      "valueLabel": "Balanced (25/45/30)",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 77.4615,
+      "meanTimeToFulfillmentSec": 145.7661,
+      "meanDonorsContacted": 5.24,
+      "meanDonorDistanceKm": 2.8729,
+      "topKResponseRate": 0.5527
+    },
+    {
+      "parameter": "urgency_mix",
+      "valueLabel": "Balanced (25/45/30)",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 72.2,
+      "meanTimeToFulfillmentSec": 137.2903,
+      "meanDonorsContacted": 5.1067,
+      "meanDonorDistanceKm": 3.1803,
+      "topKResponseRate": 0.582
+    },
+    {
+      "parameter": "urgency_mix",
+      "valueLabel": "Routine-Heavy (10/30/60)",
+      "strategy": "baseline_proximity",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 83.6667,
+      "meanTimeToFulfillmentSec": 167.4032,
+      "meanDonorsContacted": 5.44,
+      "meanDonorDistanceKm": 2.8779,
+      "topKResponseRate": 0.514
+    },
+    {
+      "parameter": "urgency_mix",
+      "valueLabel": "Routine-Heavy (10/30/60)",
+      "strategy": "hybrid_full",
+      "fulfillmentRate": 0.8267,
+      "meanTimeToFirstAcceptSec": 74.938,
+      "meanTimeToFulfillmentSec": 153.9516,
+      "meanDonorsContacted": 5.34,
+      "meanDonorDistanceKm": 3.1874,
+      "topKResponseRate": 0.5393
+    }
+  ]
+}

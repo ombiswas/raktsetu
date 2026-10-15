@@ -1,0 +1,6 @@
+# Simulation results: Paired difference analysis (Hybrid Full vs Baseline Proximity).
+metric,baseline_mean,hybrid_mean,mean_difference,ci95_lower,ci95_upper,interpretation
+"Top-K Response Rate",0.5012,0.5191,0.0179,0.0154,0.0204,"Hybrid full improves Top-K response rate by +1.8%"
+"Donors Contacted Before Fulfillment",4.9887,4.8847,-0.1039,-0.1273,-0.0787,"Hybrid full contacts 0.10 fewer donors per emergency"
+"Mean Contact Distance (km)",3.2291,3.6014,0.3724,0.3691,0.3758,"Trade-off: Hybrid prioritizes responsiveness over pure proximity (+0.37 km farther on average)"
+"Time to First Acceptance (seconds)",73.67,72.31,-1.3562,-2.2395,-0.4937,"Hybrid full achieves first acceptance 1.4s faster"

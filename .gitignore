@@ -16,7 +16,14 @@ build/
 out/
 .next/
 *.tsbuildinfo
-experiments/results/
+experiments/results/*
+!experiments/results/donor_response.csv
+!experiments/results/donor_response.metadata.json
+!experiments/results/demand_series.csv
+!experiments/results/demand_series.metadata.json
+!experiments/results/simulation_summary.json
+!experiments/results/paired_differences.csv
+!experiments/results/sensitivity_sweep.csv
 experiments/experiment_runs/
 
 # Design spec (RULE 5: Single source of truth, never commit or stage)

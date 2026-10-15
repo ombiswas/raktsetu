@@ -1,0 +1,26 @@
+# Simulation results: Sensitivity analysis parameter sweep.
+parameter,value_label,strategy,fulfillment_rate,mean_ttfa_sec,mean_tff_sec,mean_donors_contacted,mean_donor_distance_km,top_k_response_rate
+population_size,"600 donors",baseline_proximity,0.88,70.1269,166.5833,5.5267,2.3372,0.5262
+population_size,"600 donors",hybrid_full,0.88,60.4701,152,5.3267,2.6199,0.5342
+population_size,"1200 donors",baseline_proximity,0.8267,77.4615,145.7661,5.24,2.8729,0.5527
+population_size,"1200 donors",hybrid_full,0.8267,72.2,137.2903,5.1067,3.1803,0.582
+population_size,"2400 donors",baseline_proximity,0.88,62.7037,146.2727,5.4067,3.0863,0.5687
+population_size,"2400 donors",hybrid_full,0.88,70.2444,146.2424,5.2733,3.3564,0.5793
+base_response_rate,"15% base",baseline_proximity,0.8267,86.8062,175.2419,5.54,2.8827,0.4913
+base_response_rate,"15% base",hybrid_full,0.8267,78.6977,172.5726,5.5067,3.194,0.514
+base_response_rate,"30% base",baseline_proximity,0.8267,77.4615,145.7661,5.24,2.8729,0.5527
+base_response_rate,"30% base",hybrid_full,0.8267,72.2,137.2903,5.1067,3.1803,0.582
+base_response_rate,"45% base",baseline_proximity,0.8333,64.2424,133.832,5.1333,2.8601,0.614
+base_response_rate,"45% base",hybrid_full,0.8333,60.4167,128.088,5,3.1668,0.6327
+noise_level,"σ=0.05",baseline_proximity,0.8333,72.8692,147.392,5.2667,2.865,0.5527
+noise_level,"σ=0.05",hybrid_full,0.8333,70.4846,140.856,5.1333,3.1736,0.578
+noise_level,"σ=0.20",baseline_proximity,0.8267,77.4615,145.7661,5.24,2.8729,0.5527
+noise_level,"σ=0.20",hybrid_full,0.8267,72.2,137.2903,5.1067,3.1803,0.582
+noise_level,"σ=0.40",baseline_proximity,0.8267,77.6462,154.5806,5.3733,2.8758,0.55
+noise_level,"σ=0.40",hybrid_full,0.8267,72.9077,146.9274,5.2067,3.1834,0.57
+urgency_mix,"Critical-Heavy (60/30/10)",baseline_proximity,0.8267,73.5538,141.0806,5.1733,2.8696,0.5727
+urgency_mix,"Critical-Heavy (60/30/10)",hybrid_full,0.8267,70.1769,134.0403,5.04,3.179,0.594
+urgency_mix,"Balanced (25/45/30)",baseline_proximity,0.8267,77.4615,145.7661,5.24,2.8729,0.5527
+urgency_mix,"Balanced (25/45/30)",hybrid_full,0.8267,72.2,137.2903,5.1067,3.1803,0.582
+urgency_mix,"Routine-Heavy (10/30/60)",baseline_proximity,0.8267,83.6667,167.4032,5.44,2.8779,0.514
+urgency_mix,"Routine-Heavy (10/30/60)",hybrid_full,0.8267,74.938,153.9516,5.34,3.1874,0.5393
