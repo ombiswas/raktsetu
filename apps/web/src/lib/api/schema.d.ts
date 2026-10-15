@@ -934,6 +934,130 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/blood-banks/me/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get authenticated blood bank inventory stock and low-stock alerts */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            bloodBankId: string;
+                            items: {
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                bloodBankId: string;
+                                /** @enum {string} */
+                                bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                                /** @enum {string} */
+                                component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                                units: number;
+                                isLowStock: boolean;
+                                lowStockThreshold: number;
+                                updatedAt: string;
+                            }[];
+                            totalUnits: number;
+                            lowStockCount: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/blood-banks/me/inventory/adjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adjust blood inventory stock with audited movement */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                        /** @enum {string} */
+                        component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                        delta: number;
+                        reason: string;
+                        /** Format: uuid */
+                        requestId?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            inventoryId: string;
+                            /** Format: uuid */
+                            bloodBankId: string;
+                            /** @enum {string} */
+                            bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                            /** @enum {string} */
+                            component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                            previousUnits: number;
+                            newUnits: number;
+                            delta: number;
+                            reason: string;
+                            /** Format: uuid */
+                            requestId: string | null;
+                            /** Format: uuid */
+                            movementId: string;
+                            isLowStock: boolean;
+                            lowStockThreshold: number;
+                            createdAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/accounts": {
         parameters: {
             query?: never;
@@ -1521,6 +1645,175 @@ export interface paths {
         };
         trace?: never;
     };
+    "/v1/notifications/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Server-Sent Events (SSE) notification stream
+         * @description Establishes real-time SSE stream for the authenticated user with heartbeat and automatic cleanup.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List user notifications (Fallback polling) */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    unreadOnly?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            notifications: {
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                userId: string;
+                                kind: string;
+                                payload: {
+                                    [key: string]: unknown;
+                                };
+                                readAt: string | null;
+                                createdAt: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mark notification as read */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/v1/notifications/push-subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register WebPush VAPID subscription */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: uri */
+                        endpoint: string;
+                        p256dh: string;
+                        auth: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/requests/{id}/matching": {
         parameters: {
             query?: never;
@@ -1529,8 +1822,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Inspect anonymized matching status and candidates (Hospital owner / Admin)
-         * @description Returns run summary, candidate counts, and anonymized candidate ranks with approximate distance bands. No coordinates, full names, or phone numbers.
+         * Inspect matching status and candidates with consent reveal (Hospital owner / Admin)
+         * @description Returns run summary, candidate counts, and candidate ranks with approximate distance bands. Reveals name and phone strictly for accepted donors.
          */
         get: {
             parameters: {
@@ -1557,6 +1850,8 @@ export interface paths {
                             /** @enum {string} */
                             algorithm: "baseline" | "hybrid";
                             algorithmVersion: string;
+                            modelVersion?: string | null;
+                            degraded?: boolean;
                             createdAt: string;
                             config: {
                                 [key: string]: unknown;
@@ -1578,7 +1873,178 @@ export interface paths {
                                 /** @enum {string} */
                                 responseStatus: "pending" | "accepted" | "declined" | "no_response";
                                 score: number | null;
+                                firstName?: string;
+                                phone?: string;
                             }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/requests/{id}/respond": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Donor response to emergency blood request (accept/decline)
+         * @description Records voluntary donor acceptance or decline. Enforces idempotency and triggers fulfillment transition if target units are met.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        action: "accept" | "decline";
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            /** Format: uuid */
+                            candidateId: string;
+                            /** @enum {string} */
+                            response: "accepted" | "declined";
+                            isFulfilled: boolean;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/forecasts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get demand time series and multi-day point forecasts */
+        get: {
+            parameters: {
+                query?: {
+                    bloodGroup?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                    component?: "whole_blood" | "rbc" | "plasma" | "platelets";
+                    days?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                            /** @enum {string} */
+                            component: "whole_blood" | "rbc" | "plasma" | "platelets";
+                            modelVersion: string;
+                            series: {
+                                date: string;
+                                units: number;
+                            }[];
+                            forecast: {
+                                step: number;
+                                date: string;
+                                predictedUnits: number;
+                            }[];
+                            /** @enum {boolean} */
+                            isSimulation: true;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get operational analytics overview metrics */
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            requestsByStatus: {
+                                open: number;
+                                matching: number;
+                                fulfilled: number;
+                                cancelled: number;
+                                expired: number;
+                                total: number;
+                            };
+                            responseRate: number;
+                            medianTimeToFirstAcceptSeconds: number;
+                            fulfillmentRate: number;
+                            radiusExpansionFrequency: number;
+                            degradedRunRate: number;
+                            totalMatchRuns: number;
+                            totalNotifications: number;
+                            timestamp: string;
                         };
                     };
                 };

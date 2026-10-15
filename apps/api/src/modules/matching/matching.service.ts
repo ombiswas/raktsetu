@@ -124,6 +124,8 @@ export class MatchingService {
       requestId: run.requestId,
       algorithm: run.algorithm,
       algorithmVersion: run.algorithmVersion,
+      modelVersion: run.modelVersion ?? null,
+      degraded: run.degraded ?? false,
       createdAt: run.createdAt.toISOString(),
       config: run.config,
       candidateCounts,

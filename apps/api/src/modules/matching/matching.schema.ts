@@ -41,6 +41,8 @@ export const matchingStatusResponseSchema = z.object({
   requestId: z.string().uuid(),
   algorithm: z.enum(['baseline', 'hybrid']),
   algorithmVersion: z.string(),
+  modelVersion: z.string().nullable().optional(),
+  degraded: z.boolean().optional(),
   createdAt: z.string(),
   config: z.record(z.unknown()),
   candidateCounts: z.object({

@@ -28,6 +28,8 @@ export interface MatchingStatusView {
   requestId: string;
   algorithm: 'baseline' | 'hybrid';
   algorithmVersion: string;
+  modelVersion?: string | null | undefined;
+  degraded?: boolean | undefined;
   createdAt: string;
   config: Record<string, unknown>;
   candidateCounts: MatchingRunCandidateCounts;

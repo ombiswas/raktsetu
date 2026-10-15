@@ -12,6 +12,7 @@ import { Badge } from '../components/ui/Badge.js';
 // Lazy Loaded Feature Routes
 const OverviewPage = lazy(() => import('../features/overview/OverviewPage.js'));
 const HospitalPage = lazy(() => import('../features/hospital/HospitalPage.js'));
+const RequestDetailPage = lazy(() => import('../features/requests/RequestDetailPage.js'));
 const DonorPage = lazy(() => import('../features/donor/DonorPage.js'));
 const RespondToRequestPage = lazy(() => import('../features/donor/RespondToRequestPage.js'));
 const ResearchPage = lazy(() => import('../features/research/ResearchPage.js'));
@@ -175,6 +176,14 @@ function AppContent(): React.ReactElement {
             element={
               <RouteGuard allowedRoles={['hospital', 'admin']}>
                 <HospitalPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/hospital/requests/:id"
+            element={
+              <RouteGuard allowedRoles={['hospital', 'admin']}>
+                <RequestDetailPage />
               </RouteGuard>
             }
           />
