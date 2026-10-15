@@ -44,15 +44,109 @@ export const mockRequestDetails = {
   hospitalId: 'h-999',
   hospitalName: 'Apollo Hospital Trauma Center',
   hospitalAddress: 'Mathura Road, Sarita Vihar, New Delhi',
-  bloodGroup: 'O+',
-  component: 'whole_blood',
+  bloodGroup: 'O+' as const,
+  component: 'whole_blood' as const,
   unitsRequired: 2,
-  unitsFulfilled: 0,
-  urgency: 'critical',
-  status: 'active',
+  unitsFulfilled: 1,
+  urgency: 'critical' as const,
+  status: 'matching' as const,
   neededBy: new Date(Date.now() + 7200000).toISOString(),
+  location: {
+    latitude: 28.6139,
+    longitude: 77.2090
+  },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
+};
+
+export const mockMatchingStatusNormal = {
+  runId: 'run-777-normal',
+  requestId: 'req-alpha-123',
+  algorithm: 'hybrid' as const,
+  algorithmVersion: 'v1.0.0-hybrid',
+  modelVersion: 'v1.0.0',
+  degraded: false,
+  createdAt: new Date().toISOString(),
+  config: {
+    finalRadiusMeters: 5000,
+    batchSize: 5,
+    minCandidates: 5
+  },
+  candidateCounts: {
+    total: 3,
+    pending: 1,
+    accepted: 1,
+    declined: 1,
+    noResponse: 0
+  },
+  candidates: [
+    {
+      id: 'c-001',
+      rank: 1,
+      bloodGroup: 'O+' as const,
+      approximateDistance: '< 1 km',
+      responseStatus: 'accepted' as const,
+      score: 0.8842,
+      firstName: 'Aarav',
+      phone: '+919876543210'
+    },
+    {
+      id: 'c-002',
+      rank: 2,
+      bloodGroup: 'O-' as const,
+      approximateDistance: '2-3 km',
+      responseStatus: 'pending' as const,
+      score: 0.7615
+    },
+    {
+      id: 'c-003',
+      rank: 3,
+      bloodGroup: 'O+' as const,
+      approximateDistance: '4-5 km',
+      responseStatus: 'declined' as const,
+      score: 0.4321
+    }
+  ]
+};
+
+export const mockMatchingStatusDegraded = {
+  runId: 'run-888-degraded',
+  requestId: 'req-alpha-123',
+  algorithm: 'baseline' as const,
+  algorithmVersion: 'v1.0.0-baseline',
+  modelVersion: null,
+  degraded: true,
+  createdAt: new Date().toISOString(),
+  config: {
+    finalRadiusMeters: 5000,
+    batchSize: 5,
+    minCandidates: 5
+  },
+  candidateCounts: {
+    total: 2,
+    pending: 2,
+    accepted: 0,
+    declined: 0,
+    noResponse: 0
+  },
+  candidates: [
+    {
+      id: 'c-101',
+      rank: 1,
+      bloodGroup: 'O+' as const,
+      approximateDistance: '1-2 km',
+      responseStatus: 'pending' as const,
+      score: null
+    },
+    {
+      id: 'c-102',
+      rank: 2,
+      bloodGroup: 'O-' as const,
+      approximateDistance: '3-4 km',
+      responseStatus: 'pending' as const,
+      score: null
+    }
+  ]
 };
 
 export const handlers = [
@@ -223,5 +317,59 @@ export const handlers = [
           ? 'Emergency request accepted successfully'
           : 'Emergency request declined'
     });
+  }),
+
+  // 17. Blood Requests: List GET (Hospital Scoped)
+  http.get('/api/v1/requests', () => {
+    return HttpResponse.json({
+      requests: [mockRequestDetails]
+    });
+  }),
+
+  // 18. Blood Requests: Create POST (With Idempotency Key)
+  http.post('/api/v1/requests', async ({ request }) => {
+    const body = (await request.json()) as {
+      bloodGroup: string;
+      component: string;
+      unitsRequired: number;
+      urgency: string;
+      neededBy: string;
+    };
+    const idempotencyKey = request.headers.get('idempotency-key');
+
+    const newRequest = {
+      id: 'req-new-001',
+      hospitalId: 'h-999',
+      bloodGroup: body.bloodGroup,
+      component: body.component,
+      unitsRequired: body.unitsRequired,
+      unitsFulfilled: 0,
+      urgency: body.urgency,
+      status: 'matching',
+      neededBy: body.neededBy,
+      location: {
+        latitude: 28.6139,
+        longitude: 77.2090
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      idempotencyKey
+    };
+
+    return HttpResponse.json(newRequest, { status: 201 });
+  }),
+
+  // 19. Blood Requests: Cancel PATCH
+  http.patch('/api/v1/requests/:id/cancel', () => {
+    return HttpResponse.json({
+      ...mockRequestDetails,
+      status: 'cancelled',
+      updatedAt: new Date().toISOString()
+    });
+  }),
+
+  // 20. Blood Requests: Matching Status GET
+  http.get('/api/v1/requests/:id/matching', () => {
+    return HttpResponse.json(mockMatchingStatusNormal);
   })
 ];
