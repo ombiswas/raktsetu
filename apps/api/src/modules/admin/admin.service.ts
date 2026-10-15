@@ -3,7 +3,9 @@ import type { AuditService } from '../audit/audit.service.js';
 import type {
   IAdminRepository,
   AdminAccountSummary,
-  ListAccountsQuery
+  ListAccountsQuery,
+  AuditLogItem,
+  ListAuditLogsQuery
 } from './admin.types.js';
 
 export class AdminService {
@@ -120,5 +122,14 @@ export class AdminService {
       message: 'User account reactivated successfully',
       account: updated
     };
+  }
+
+  public async listAuditLogs(
+    query: ListAuditLogsQuery
+  ): Promise<{ items: AuditLogItem[]; total: number; limit: number; offset: number }> {
+    const limit = query.limit ?? 20;
+    const offset = query.offset ?? 0;
+    const { items, total } = await this.repository.listAuditLogs({ ...query, limit, offset });
+    return { items, total, limit, offset };
   }
 }

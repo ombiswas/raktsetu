@@ -63,3 +63,32 @@ export const adminAccountActionResponseSchema = z.object({
   message: z.string(),
   account: adminAccountSummarySchema
 });
+
+export const listAuditLogsQuerySchema = z.object({
+  entity: z.string().optional(),
+  action: z.string().optional(),
+  actorUserId: z.string().uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0)
+});
+
+export type ListAuditLogsQuerySchemaInput = z.infer<typeof listAuditLogsQuerySchema>;
+
+export const auditLogItemSchema = z.object({
+  id: z.string().uuid(),
+  actorUserId: z.string().uuid().nullable(),
+  action: z.string(),
+  entity: z.string(),
+  entityId: z.string(),
+  ipHash: z.string().nullable(),
+  metadata: z.record(z.unknown()).nullable(),
+  createdAt: z.string()
+});
+
+export const adminAuditLogsListResponseSchema = z.object({
+  items: z.array(auditLogItemSchema),
+  total: z.number().int().nonnegative(),
+  limit: z.number().int(),
+  offset: z.number().int()
+});
+

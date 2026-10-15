@@ -21,6 +21,10 @@ const DonorRegisterPage = lazy(() => import('../features/auth/DonorRegisterPage.
 const HospitalRegisterPage = lazy(() => import('../features/auth/HospitalRegisterPage.js'));
 const BloodBankRegisterPage = lazy(() => import('../features/auth/BloodBankRegisterPage.js'));
 const PendingApprovalPage = lazy(() => import('../features/auth/PendingApprovalPage.js'));
+const BloodBankPage = lazy(() => import('../features/blood-bank/BloodBankPage.js'));
+const ForecastPage = lazy(() => import('../features/forecast/ForecastPage.js'));
+const AnalyticsPage = lazy(() => import('../features/analytics/AnalyticsPage.js'));
+const AdminPage = lazy(() => import('../features/admin/AdminPage.js'));
 const NotFoundPage = lazy(() => import('../features/not-found/NotFoundPage.js'));
 const DesignCheckPage = lazy(() => import('../features/design-check/DesignCheckPage.js'));
 
@@ -41,8 +45,14 @@ function AppContent(): React.ReactElement {
 
   const navItems: NavItem[] = [
     { label: 'Overview', href: '/', active: location.pathname === '/' },
-    { label: 'Hospital Emergency', href: '/hospital', active: location.pathname === '/hospital' },
+    { label: 'Hospital Emergency', href: '/hospital', active: location.pathname.startsWith('/hospital') },
+    { label: 'Blood Bank', href: '/blood-bank', active: location.pathname === '/blood-bank' },
+    { label: 'Forecast', href: '/blood-bank/forecast', active: location.pathname === '/blood-bank/forecast' },
+    { label: 'Analytics', href: '/analytics', active: location.pathname === '/analytics' },
     { label: 'Donor Portal', href: '/donor', active: location.pathname.startsWith('/donor') },
+    ...(user?.role === 'admin'
+      ? [{ label: 'Admin Console', href: '/admin', active: location.pathname.startsWith('/admin') }]
+      : []),
     { label: 'Benchmark Metrics', href: '/research', active: location.pathname === '/research' },
     ...(isDev
       ? [{ label: 'Design Check', href: '/design-check', active: location.pathname === '/design-check' }]
@@ -65,10 +75,40 @@ function AppContent(): React.ReactElement {
       label: 'Hospital Dispatch',
       href: '/hospital',
       badge: 'URGENT',
-      active: location.pathname === '/hospital',
+      active: location.pathname.startsWith('/hospital'),
       onClick: (e?: React.MouseEvent) => {
         if (e) e.preventDefault();
         navigate('/hospital');
+      }
+    },
+    {
+      id: 'blood-bank',
+      label: 'Blood Bank Inventory',
+      href: '/blood-bank',
+      active: location.pathname === '/blood-bank',
+      onClick: (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+        navigate('/blood-bank');
+      }
+    },
+    {
+      id: 'forecast',
+      label: 'Demand Forecast',
+      href: '/blood-bank/forecast',
+      active: location.pathname === '/blood-bank/forecast',
+      onClick: (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+        navigate('/blood-bank/forecast');
+      }
+    },
+    {
+      id: 'analytics',
+      label: 'Dispatch Analytics',
+      href: '/analytics',
+      active: location.pathname === '/analytics',
+      onClick: (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+        navigate('/analytics');
       }
     },
     {
@@ -81,6 +121,21 @@ function AppContent(): React.ReactElement {
         navigate('/donor');
       }
     },
+    ...(user?.role === 'admin'
+      ? [
+          {
+            id: 'admin',
+            label: 'Admin Moderation',
+            href: '/admin',
+            badge: 'RBAC',
+            active: location.pathname.startsWith('/admin'),
+            onClick: (e?: React.MouseEvent) => {
+              if (e) e.preventDefault();
+              navigate('/admin');
+            }
+          }
+        ]
+      : []),
     {
       id: 'research',
       label: 'Benchmark Metrics',
@@ -184,6 +239,52 @@ function AppContent(): React.ReactElement {
             element={
               <RouteGuard allowedRoles={['hospital', 'admin']}>
                 <RequestDetailPage />
+              </RouteGuard>
+            }
+          />
+
+          {/* Role-Guarded Blood Bank Inventory & Ops */}
+          <Route
+            path="/blood-bank"
+            element={
+              <RouteGuard allowedRoles={['blood_bank']}>
+                <BloodBankPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/blood-bank/forecast"
+            element={
+              <RouteGuard allowedRoles={['blood_bank', 'admin']}>
+                <ForecastPage />
+              </RouteGuard>
+            }
+          />
+
+          {/* Role-Guarded Operational Analytics */}
+          <Route
+            path="/analytics"
+            element={
+              <RouteGuard allowedRoles={['blood_bank', 'admin']}>
+                <AnalyticsPage />
+              </RouteGuard>
+            }
+          />
+
+          {/* Role-Guarded Admin Console */}
+          <Route
+            path="/admin"
+            element={
+              <RouteGuard allowedRoles={['admin']}>
+                <AdminPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/admin/audit"
+            element={
+              <RouteGuard allowedRoles={['admin']}>
+                <AdminPage />
               </RouteGuard>
             }
           />

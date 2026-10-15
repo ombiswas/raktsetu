@@ -1,18 +1,21 @@
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import type { DatabaseInstance } from '../../platform/database/connection.js';
 import {
   users,
   hospitals,
   bloodBanks,
   donors,
-  refreshTokens
+  refreshTokens,
+  auditLogs
 } from '../../platform/database/schema.js';
 import type {
   IAdminRepository,
   AdminAccountSummary,
   ListAccountsQuery,
   AccountRole,
-  AccountStatus
+  AccountStatus,
+  AuditLogItem,
+  ListAuditLogsQuery
 } from './admin.types.js';
 
 export class AdminRepository implements IAdminRepository {
@@ -258,5 +261,54 @@ export class AdminRepository implements IAdminRepository {
             : new Date().toISOString(),
       details
     };
+  }
+
+  public async listAuditLogs(query: ListAuditLogsQuery): Promise<{ items: AuditLogItem[]; total: number }> {
+    const conditions = [];
+    if (query.entity) conditions.push(eq(auditLogs.entity, query.entity));
+    if (query.action) conditions.push(eq(auditLogs.action, query.action));
+    if (query.actorUserId) conditions.push(eq(auditLogs.actorUserId, query.actorUserId));
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await this.db
+      .select({ count: sql<number>`cast(count(*) as integer)` })
+      .from(auditLogs)
+      .where(whereClause);
+
+    const total = countResult?.count ?? 0;
+
+    const rows = await this.db
+      .select({
+        id: auditLogs.id,
+        actorUserId: auditLogs.actorUserId,
+        action: auditLogs.action,
+        entity: auditLogs.entity,
+        entityId: auditLogs.entityId,
+        ipHash: auditLogs.ipHash,
+        metadata: auditLogs.metadata,
+        createdAt: auditLogs.createdAt
+      })
+      .from(auditLogs)
+      .where(whereClause)
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(query.limit ?? 20)
+      .offset(query.offset ?? 0);
+
+    const items = rows.map((r) => ({
+      id: r.id,
+      actorUserId: r.actorUserId,
+      action: r.action,
+      entity: r.entity,
+      entityId: r.entityId,
+      ipHash: r.ipHash,
+      metadata: (r.metadata as Record<string, unknown> | null) ?? null,
+      createdAt:
+        r.createdAt instanceof Date
+          ? r.createdAt.toISOString()
+          : new Date(r.createdAt).toISOString()
+    }));
+
+    return { items, total };
   }
 }

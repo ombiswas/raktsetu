@@ -44,6 +44,25 @@ export interface ListAccountsQuery {
   offset?: number | undefined;
 }
 
+export interface AuditLogItem {
+  id: string;
+  actorUserId: string | null;
+  action: string;
+  entity: string;
+  entityId: string;
+  ipHash: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface ListAuditLogsQuery {
+  entity?: string | undefined;
+  action?: string | undefined;
+  actorUserId?: string | undefined;
+  limit?: number | undefined;
+  offset?: number | undefined;
+}
+
 export interface IAdminRepository {
   findUserById(
     userId: string
@@ -52,4 +71,5 @@ export interface IAdminRepository {
   approveAccount(userId: string, adminUserId: string): Promise<AdminAccountSummary | null>;
   suspendAccount(userId: string): Promise<AdminAccountSummary | null>;
   reactivateAccount(userId: string): Promise<AdminAccountSummary | null>;
+  listAuditLogs(query: ListAuditLogsQuery): Promise<{ items: AuditLogItem[]; total: number }>;
 }

@@ -34,7 +34,8 @@ describe('AdminService Unit Tests', () => {
       listAccounts: vi.fn(),
       approveAccount: vi.fn(),
       suspendAccount: vi.fn(),
-      reactivateAccount: vi.fn()
+      reactivateAccount: vi.fn(),
+      listAuditLogs: vi.fn()
     };
     audit = {
       record: vi.fn()

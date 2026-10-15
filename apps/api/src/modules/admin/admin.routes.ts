@@ -7,7 +7,10 @@ import {
   type ListAccountsQuerySchemaInput,
   accountIdParamSchema,
   adminAccountsListResponseSchema,
-  adminAccountActionResponseSchema
+  adminAccountActionResponseSchema,
+  listAuditLogsQuerySchema,
+  type ListAuditLogsQuerySchemaInput,
+  adminAuditLogsListResponseSchema
 } from './admin.schema.js';
 import { createAuthenticateGuard, authorize } from '../../platform/http/guards/index.js';
 import type { DatabaseInstance } from '../../platform/database/connection.js';
@@ -111,5 +114,26 @@ export const adminRoutes: FastifyPluginAsync<AdminRoutesOptions> = async (app, o
       }
     },
     (req, reply) => controller.reactivateAccount(req, reply)
+  );
+
+  // 5. GET /v1/admin/audit-logs
+  app.get<{ Querystring: ListAuditLogsQuerySchemaInput }>(
+    '/audit-logs',
+    {
+      config: {
+        auth: true,
+        roles: ['admin']
+      },
+      preHandler: [authenticate, authorize('admin')],
+      schema: {
+        tags: ['Admin'],
+        summary: 'Paginated and filterable read-only access to immutable audit logs',
+        querystring: listAuditLogsQuerySchema,
+        response: {
+          200: adminAuditLogsListResponseSchema
+        }
+      }
+    },
+    (req, reply) => controller.listAuditLogs(req, reply)
   );
 };

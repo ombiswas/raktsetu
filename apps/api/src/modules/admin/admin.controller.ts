@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { AdminService } from './admin.service.js';
-import type { ListAccountsQuery } from './admin.types.js';
+import type { ListAccountsQuery, ListAuditLogsQuery } from './admin.types.js';
 
 export class AdminController {
   constructor(private readonly service: AdminService) {}
@@ -46,6 +46,14 @@ export class AdminController {
       request.user!.id,
       request.ip
     );
+    return reply.status(200).send(result);
+  }
+
+  public async listAuditLogs(
+    request: FastifyRequest<{ Querystring: ListAuditLogsQuery }>,
+    reply: FastifyReply
+  ): Promise<void> {
+    const result = await this.service.listAuditLogs(request.query);
     return reply.status(200).send(result);
   }
 }
