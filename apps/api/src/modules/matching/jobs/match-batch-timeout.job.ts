@@ -26,7 +26,12 @@ export async function registerMatchBatchTimeoutJob(
   useCase: BatchExpansionUseCase
 ): Promise<string> {
   try {
-    await boss.createQueue(MATCH_BATCH_TIMEOUT_JOB_NAME);
+    await boss.createQueue(MATCH_BATCH_TIMEOUT_JOB_NAME, {
+      name: MATCH_BATCH_TIMEOUT_JOB_NAME,
+      retryLimit: 3,
+      retryDelay: 10,
+      retryBackoff: true
+    });
   } catch {
     // Queue may already exist
   }

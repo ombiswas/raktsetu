@@ -105,7 +105,12 @@ export class BatchExpansionUseCase {
           await this.boss.send(
             'matching.batch-timeout',
             { requestId: request.id, runId: run.id, batchNo: nextBatchNo },
-            { startAfter: this.batchWindowSeconds }
+            {
+              startAfter: this.batchWindowSeconds,
+              retryLimit: 3,
+              retryDelay: 10,
+              retryBackoff: true
+            }
           );
         } catch {
           // In test / standalone environment without running boss
@@ -295,7 +300,12 @@ export class BatchExpansionUseCase {
         await this.boss.send(
           'matching.batch-timeout',
           { requestId: request.id, runId: run.id, batchNo: nextBatchNo },
-          { startAfter: this.batchWindowSeconds }
+          {
+            startAfter: this.batchWindowSeconds,
+            retryLimit: 3,
+            retryDelay: 10,
+            retryBackoff: true
+          }
         );
       } catch {
         // Safe in tests

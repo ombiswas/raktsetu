@@ -55,6 +55,10 @@ export const envSchema = z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .optional(),
     INVENTORY_LOW_STOCK_THRESHOLD: z.coerce.number().int().nonnegative().default(10),
+    DB_POOL_MAX: z.coerce.number().int().positive().default(10),
+    DB_IDLE_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
+    DB_CONNECTION_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
+    DB_STATEMENT_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
     TRUST_PROXY: z
       .preprocess((val) => {
         if (typeof val === 'string') {

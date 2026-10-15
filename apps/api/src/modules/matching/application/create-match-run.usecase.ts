@@ -341,7 +341,12 @@ export class CreateMatchRunUseCase {
         await this.boss.send(
           'matching.batch-timeout',
           { requestId: request.id, runId: run.id, batchNo: 1 },
-          { startAfter: this.batchWindowSeconds }
+          {
+            startAfter: this.batchWindowSeconds,
+            retryLimit: 3,
+            retryDelay: 10,
+            retryBackoff: true
+          }
         );
       } catch {
         // Safe in testing without active boss broker

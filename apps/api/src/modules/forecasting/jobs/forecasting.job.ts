@@ -23,7 +23,12 @@ export async function registerDemandForecastingJob(
 ): Promise<string> {
   // 1. Ensure queue exists
   try {
-    await boss.createQueue(FORECASTING_NIGHTLY_JOB_NAME);
+    await boss.createQueue(FORECASTING_NIGHTLY_JOB_NAME, {
+      name: FORECASTING_NIGHTLY_JOB_NAME,
+      retryLimit: 3,
+      retryDelay: 30,
+      retryBackoff: true
+    });
   } catch {
     // Queue may already exist or cannot be created concurrently
   }
@@ -41,7 +46,12 @@ export async function registerDemandForecastingJob(
   });
 
   // 3. Schedule recurring nightly cron at 00:00 UTC
-  await boss.schedule(FORECASTING_NIGHTLY_JOB_NAME, '0 0 * * *', {}, { tz: 'UTC' });
+  await boss.schedule(
+    FORECASTING_NIGHTLY_JOB_NAME,
+    '0 0 * * *',
+    {},
+    { tz: 'UTC', retryLimit: 3, retryDelay: 30, retryBackoff: true }
+  );
 
   return workerId;
 }

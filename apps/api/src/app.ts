@@ -22,6 +22,7 @@ import { registerSecurityPlugins } from './platform/security/index.js';
 import {
   createDbPool,
   createDrizzle,
+  checkDatabaseReadiness,
   type DatabaseInstance
 } from './platform/database/connection.js';
 import { authRoutes } from './modules/auth/presentation/auth.routes.js';
@@ -149,9 +150,13 @@ export async function buildApp(deps: Partial<AppDependencies> = {}): Promise<Fas
   }
 
   // Health and Readiness probes
+  const checkDb =
+    deps.checkDatabase ??
+    (ownPool ? () => checkDatabaseReadiness(ownPool!) : async () => true);
+
   await app.register(healthRoutes, {
     prefix: '/health',
-    checkDatabase: deps.checkDatabase
+    checkDatabase: checkDb
   });
 
   // Auth Module routes

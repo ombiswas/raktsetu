@@ -33,10 +33,10 @@ export function createDbPool(
 
   const pool = new Pool({
     connectionString: cfg.DATABASE_URL,
-    max: options.max ?? (isProd ? 20 : 10),
-    idleTimeoutMillis: options.idleTimeoutMillis ?? 30000,
-    connectionTimeoutMillis: options.connectionTimeoutMillis ?? 5000,
-    statement_timeout: options.statementTimeoutMillis ?? 10000,
+    max: options.max ?? cfg.DB_POOL_MAX ?? (isProd ? 10 : 10),
+    idleTimeoutMillis: options.idleTimeoutMillis ?? cfg.DB_IDLE_TIMEOUT_MS ?? 30000,
+    connectionTimeoutMillis: options.connectionTimeoutMillis ?? cfg.DB_CONNECTION_TIMEOUT_MS ?? 5000,
+    statement_timeout: options.statementTimeoutMillis ?? cfg.DB_STATEMENT_TIMEOUT_MS ?? 10000,
     ssl: sslConfig
   });
 

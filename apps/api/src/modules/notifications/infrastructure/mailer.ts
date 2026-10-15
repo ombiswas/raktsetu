@@ -36,7 +36,8 @@ export class ResendMailer implements Mailer {
           subject,
           text,
           html: html ?? `<p>${text}</p>`
-        })
+        }),
+        signal: AbortSignal.timeout(5000)
       });
       return res.ok;
     } catch {
@@ -62,7 +63,8 @@ export class BrevoMailer implements Mailer {
           subject,
           textContent: text,
           htmlContent: html ?? `<p>${text}</p>`
-        })
+        }),
+        signal: AbortSignal.timeout(5000)
       });
       return res.ok;
     } catch {

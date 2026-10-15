@@ -60,7 +60,8 @@ export class DefaultWebPushClient implements WebPushClient {
       };
 
       await webpush.sendNotification(pushSub, JSON.stringify(payload), {
-        TTL: 300 // 5 minute TTL for emergency blood alerts
+        TTL: 300, // 5 minute TTL for emergency blood alerts
+        timeout: 5000
       });
 
       return true;

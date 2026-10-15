@@ -22,7 +22,12 @@ export async function registerRequestExpiryJob(
 ): Promise<string> {
   // 1. Ensure queue exists prior to scheduling (required by pg-boss schema foreign key)
   try {
-    await boss.createQueue(REQUEST_EXPIRY_JOB_NAME);
+    await boss.createQueue(REQUEST_EXPIRY_JOB_NAME, {
+      name: REQUEST_EXPIRY_JOB_NAME,
+      retryLimit: 3,
+      retryDelay: 10,
+      retryBackoff: true
+    });
   } catch {
     // Queue may already exist or cannot be created concurrently
   }
@@ -38,7 +43,12 @@ export async function registerRequestExpiryJob(
   });
 
   // 3. Schedule recurring cron (every minute)
-  await boss.schedule(REQUEST_EXPIRY_JOB_NAME, '* * * * *', {}, { tz: 'UTC' });
+  await boss.schedule(
+    REQUEST_EXPIRY_JOB_NAME,
+    '* * * * *',
+    {},
+    { tz: 'UTC', retryLimit: 3, retryDelay: 10, retryBackoff: true }
+  );
 
   return workerId;
 }
