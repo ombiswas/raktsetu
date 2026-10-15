@@ -45,6 +45,7 @@ export interface ForecastOverviewResponse {
   bloodGroup: BloodGroup;
   component: BloodComponent;
   modelVersion: string;
+  mae?: number | null | undefined;
   series: TimeSeriesPoint[];
   forecast: Array<{
     step: number;

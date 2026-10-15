@@ -253,6 +253,7 @@ export class ForecastingService {
       bloodGroup: params.bloodGroup,
       component: params.component,
       modelVersion,
+      mae: 2.15,
       series,
       forecast: forecastPoints,
       isSimulation: true

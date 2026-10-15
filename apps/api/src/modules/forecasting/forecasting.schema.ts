@@ -25,6 +25,7 @@ export const forecastOverviewResponseSchema = z.object({
   bloodGroup: bloodGroupEnumSchema,
   component: bloodComponentEnumSchema,
   modelVersion: z.string(),
+  mae: z.number().nullable().optional(),
   series: z.array(timeSeriesPointSchema),
   forecast: z.array(forecastPointSchema),
   isSimulation: z.literal(true)
