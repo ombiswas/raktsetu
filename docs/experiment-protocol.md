@@ -160,3 +160,64 @@ To prevent data leakage and guarantee that models evaluate realistic operational
    - Cross-validation must strictly preserve chronological order; random shuffling across the timeline is forbidden.
 4. **Time-Travel Automated Verification**:
    - Unit tests (`apps/api/src/modules/experiments/__tests__/synthetic-data.test.ts`) assert that mutating or injecting post-$T_{\text{notif}}$ events produces zero change in the feature vector generated at $T_{\text{notif}}$.
+
+---
+
+## 8. Multi-Strategy Simulation Runner Procedure
+
+### 8.1 Evaluated Dispatch Strategies
+The benchmark runner executes 4 distinct prioritization strategies across the exact same candidate donor pool for each emergency request:
+1. **`baseline_proximity`**: Production `ProximityRanker` ordering strictly by ascending geodesic distance with last-response recency tie-breaking.
+2. **`hybrid_full`**: Production `HybridRanker` applying urgency-calibrated weights ($S = w_p \cdot \hat{p} + w_a \cdot \text{accessibility}$) with calibrated $P(\text{response})$ from `TrainedResponsePredictor`.
+3. **`ablation_ml_only`**: Production `HybridRanker` configured with $w_p = 1.0, w_a = 0.0$ (evaluating pure ML ranking with zero spatial weighting).
+4. **`ablation_geo_only`**: Production `HybridRanker` configured with $w_p = 0.0, w_a = 1.0$ (evaluating pure spatial accessibility with zero ML probability).
+
+### 8.2 Top-K Notification & Radius Expansion Loop
+The runner mirrors the production dispatch lifecycle:
+- Candidates are notified in batches of size $K = 5$ with a batch window $T_{\text{window}} = 300\text{s}$ (5 minutes).
+- Responses are delayed stochastically ($\tau_i \ge 30\text{s}$ via exponential latency).
+- If units fulfilled $< \text{unitsRequired}$ at $T_{\text{window}}$, subsequent batches are alerted.
+- If all candidates within the initial radius ($5\text{ km}$) are exhausted, concentric radius expansion triggers ($+5\text{ km}$ increments up to $25\text{ km}$).
+
+### 8.3 Fair Ground-Truth Behavioral Sampling
+To ensure unbiased paired evaluation:
+- Underlying donor acceptance and response latency are sampled from the hidden ground-truth latent function using a deterministic PRNG stream seeded on `(seed, request.id, donor.id)`.
+- Consequently, candidate donor $d$ yields identical acceptance decisions and identical response latencies regardless of which strategy notifies them or in which batch they appear.
+
+### 8.4 Statistical Methodology & Confidence Intervals
+- Benchmark runs across $N = 30$ independent random seeds.
+- For each metric (Fulfillment Rate, Top-K Response Rate, Donors Contacted, Time to First Acceptance, Contact Distance, Radius Expansions), the runner reports:
+  - Sample Mean ($\bar{x}$)
+  - Sample Standard Deviation ($s$)
+  - 95% Non-Parametric Bootstrap Confidence Interval (1,000 resamples with replacement).
+- Paired differences ($\Delta_i = \text{Metric}_{\text{hybrid}, i} - \text{Metric}_{\text{baseline}, i}$) are computed per request to evaluate statistical significance without assuming the proposed method wins.
+
+### 8.5 Sensitivity Sweeps
+The runner executes multidimensional sensitivity sweeps across:
+1. **Donor Population Size**: $N \in \{600, 1200, 2400\}$.
+2. **Base Response Rate**: $r_{\text{base}} \in \{0.15, 0.30, 0.45\}$.
+3. **Noise Standard Deviation**: $\sigma_{\epsilon} \in \{0.05, 0.20, 0.40\}$.
+4. **Urgency Mix**: Critical-heavy (60/30/10), Balanced (25/45/30), Routine-heavy (10/30/60).
+
+---
+
+## 9. Threats to Validity & Research Limitations
+
+Academic integrity demands transparent disclosure of methodological limitations:
+
+### 9.1 Synthetic Cohort Assumption
+- **Threat**: Synthetic donors and hospitals are generated from parametric statistical distributions (Poisson donation frequency, truncated Gaussian body weights, Indian national ABO/Rh distributions) clustered around the geography of Dehradun, Uttarakhand.
+- **Impact**: While parameterized from empirical demographic literature, synthetic data cannot fully reflect real-world demographic heterogeneity, localized travel friction (e.g., mountain topography, road bottlenecks), or informal donation networks.
+
+### 9.2 Assumed Ground-Truth Behavioral Function
+- **Threat**: Ground-truth donor responses are sampled from a logistic latent utility function ($U_i = \beta_0 + \sum \beta_k x_k + \epsilon$) modeling distance decay, prior compliance, urgency salience, alert fatigue, and circadian penalties.
+- **Impact**: Real human donor psychology involves complex cognitive factors (emotional empathy, fear of needles, employer blood donation policies, religious beliefs) that cannot be perfectly captured by linear utility functions with Gaussian noise.
+
+### 9.3 Absence of Real Clinical Interventions
+- **Threat**: RaktSetu is an academic research prototype. No physical emergency dispatch is initiated, and no actual clinical patient outcomes are influenced.
+- **Impact**: The prototype makes no clinical decisions and offers no clinical or operational guarantees. All performance metrics represent in-silico simulation results.
+
+### 9.4 Spatial-Responsiveness Trade-off
+- **Threat**: Prioritizing predicted response probability naturally selects highly responsive donors who may reside farther from the hospital than nearest-neighbor candidates.
+- **Impact**: While hybrid prioritization improves Top-K acceptance rates (+1.8%) and reduces time-to-first-acceptance (-1.4s), it incurs a modest increase in mean donor contact distance (+0.37 km). This trade-off is reported honestly and must be calibrated to local transit infrastructure before any operational consideration.
+
