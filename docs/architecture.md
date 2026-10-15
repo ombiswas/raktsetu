@@ -160,6 +160,65 @@ The platform uses `pg-boss` (PostgreSQL-backed job queue):
 
 ---
 
-## 6. Simulation & Research Protocol
+## 6. System Architecture Diagram
 
-All synthetic datasets are generated using statistically grounded behavioral distributions (synthetic donors, hospital emergency arrivals, simulated response rates under varying notification delays and travel distances). Experimental configurations and protocols are detailed in `docs/experiment-protocol.md`.
+```mermaid
+flowchart TB
+    subgraph Client["Client Tier (Vercel)"]
+        Browser["User Browser\n(Donor / Hospital / Blood Bank / Admin)"]
+        Web["apps/web (React 19 + Vite)\nSame-Origin /api Rewrite"]
+    end
+
+    subgraph Platform["Application & Compute Tier (Render)"]
+        API["apps/api (Node 22 + Fastify 5)\n- Deterministic Hard Constraints\n- Hybrid Multi-Objective Ranker\n- Output Shaping & PII Redaction"]
+        ML["services/ml (Python 3.12 + FastAPI)\n- XGBoost Calibrated Classifier\n- Isolated P(response) Inference"]
+        Workers["pg-boss Workers (In-Process / Background)\n- Batch Escalation Timeouts\n- Request Expiry Reaper\n- Demand Forecasting Nightly"]
+    end
+
+    subgraph Data["Data & Persistence Tier (Neon PostgreSQL)"]
+        Postgres["PostgreSQL 16 Database\n- Relational Core Schemas\n- PostGIS Geometry & GiST Indexes\n- pgboss Job Queues & State Machine"]
+    end
+
+    subgraph External["External Notification Services"]
+        WebPush["Web Push Gateway\n(VAPID / RFC 8291)"]
+        EmailGW["Email Dispatcher\n(Resend / Brevo / Console)"]
+    end
+
+    Browser -->|HTTPS / WSS| Web
+    Web -->|Rewrite: /api/* -> API| API
+    API -->|Internal Bearer HTTP / 800ms Timeout| ML
+    API -->|TCP / SSL Pool (Max 10)| Postgres
+    Workers -->|SKIP LOCKED Queries| Postgres
+    API -->|Web Push Dispatch| WebPush
+    API -->|Transaction Mail| EmailGW
+    WebPush -.-> Browser
+```
+
+---
+
+## 7. API Specification & OpenAPI Documentation
+
+RaktSetu automatically maintains an OpenAPI 3.1 specification generated from Fastify Zod route definitions:
+- The authoritative specification is persisted at [`docs/openapi.json`](file:///d:/Backup/Projects/raktsetu/docs/openapi.json).
+- Generated via CLI: `npm --prefix apps/api run openapi:generate`.
+- When running in non-production mode, interactive Swagger UI is available at `/docs` (e.g. `http://localhost:3000/docs`).
+- The web frontend generates strong TypeScript bindings from this schema via `openapi-typescript`.
+
+---
+
+## 8. Honest Limitations & Operational Assumptions
+
+1. **Synthetic Data and Simulation Only**:
+   - All donor profiles, historical response traces, emergency blood requests, and demand arrival patterns are generated through statistical simulations (`src/modules/experiments/fixture-generator.ts`).
+   - The ML response predictor is calibrated on synthetic probabilistic distributions. The system has **not been tested or clinically validated** in live hospital environments.
+2. **Not For Clinical Use**:
+   - RaktSetu is an educational research and engineering demonstration prototype.
+   - It makes **no medical diagnoses, no triage judgments, and zero guarantees** of blood safety or donor availability.
+   - All physical blood donations must undergo standard clinical pre-screening, hemoglobin testing, and serological cross-matching by certified healthcare professionals.
+3. **Free-Tier Infrastructure Cold Starts**:
+   - On free hosting tiers (Render Web Services and Neon Serverless PostgreSQL), compute instances scale to zero after 15 minutes of idle traffic.
+   - Initial cold-start wakeups may take **30 to 60 seconds**, temporarily pausing active pg-boss expansion timers or delaying SSE event delivery until the server spins up.
+4. **Coarse Spheroidal Distance vs. Real-Time Road Traffic**:
+   - Candidate distances are computed via PostGIS `ST_Distance(location::geography)` as geodesic great-circle arc lengths on the WGS84 spheroid.
+   - Great-circle distance does not account for urban traffic congestion, bridge crossings, or terrain barriers. In production, this would be supplemented with a routing matrix API (e.g. OSRM or OpenRouteService).
+
