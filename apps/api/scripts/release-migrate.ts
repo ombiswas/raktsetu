@@ -13,13 +13,37 @@
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function loadEnv(): void {
+  if (typeof process.loadEnvFile !== 'function') return;
+  const cwd = process.cwd();
+  const candidates = [
+    path.join(cwd, '.env'),
+    path.join(cwd, 'apps', 'api', '.env'),
+    path.resolve(__dirname, '../.env'),
+    path.resolve(__dirname, '../../.env'),
+    path.resolve(__dirname, '../../apps/api/.env')
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      try {
+        process.loadEnvFile(p);
+        break;
+      } catch {
+        // Continue
+      }
+    }
+  }
+}
+
 async function runReleaseMigration(): Promise<void> {
+  loadEnv();
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     console.error('[release-migrate] ERROR: DATABASE_URL environment variable is not defined');

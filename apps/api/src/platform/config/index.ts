@@ -1,4 +1,47 @@
 import { z } from 'zod';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/**
+ * Automatically loads .env file into process.env if not already set.
+ * Searches current working directory, module directory, and standard project locations.
+ */
+export function loadEnv(): void {
+  if (typeof process.loadEnvFile !== 'function') return;
+  const cwd = process.cwd();
+  let moduleDir = '';
+  try {
+    moduleDir = path.dirname(fileURLToPath(import.meta.url));
+  } catch {
+    moduleDir = cwd;
+  }
+  const candidates = [
+    path.join(cwd, '.env'),
+    path.join(cwd, 'apps', 'api', '.env'),
+    path.resolve(moduleDir, '.env'),
+    path.resolve(moduleDir, '../.env'),
+    path.resolve(moduleDir, '../../.env'),
+    path.resolve(moduleDir, '../../../.env'),
+    path.resolve(moduleDir, '../../../../.env'),
+    path.resolve(moduleDir, '../../../../apps/api/.env')
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      try {
+        process.loadEnvFile(p);
+        if (process.env.DATABASE_URL) {
+          break;
+        }
+      } catch {
+        // Continue searching
+      }
+    }
+  }
+}
+
+// Ensure .env is loaded before creating config
+loadEnv();
 
 const DEFAULT_DEV_JWT_SECRET = 'dev-super-secret-jwt-key-minimum-32-chars-long!';
 const DEFAULT_DEV_COOKIE_SECRET = 'dev-super-secret-cookie-key-minimum-32-chars!';

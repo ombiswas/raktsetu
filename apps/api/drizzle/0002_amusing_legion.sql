@@ -1,4 +1,4 @@
-CREATE TABLE "idempotency_keys" (
+CREATE TABLE IF NOT EXISTS "idempotency_keys" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"key" text NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE "idempotency_keys" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "login_attempts" (
+CREATE TABLE IF NOT EXISTS "login_attempts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"identifier" text NOT NULL,
 	"failed_count" integer DEFAULT 0 NOT NULL,
@@ -17,9 +17,14 @@ CREATE TABLE "login_attempts" (
 	"last_attempt_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "idempotency_keys" ADD CONSTRAINT "idempotency_keys_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "idempotency_keys_key_user_unique" ON "idempotency_keys" USING btree ("key","user_id");--> statement-breakpoint
-CREATE INDEX "idempotency_keys_user_id_idx" ON "idempotency_keys" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idempotency_keys_expires_at_idx" ON "idempotency_keys" USING btree ("expires_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "login_attempts_identifier_unique_idx" ON "login_attempts" USING btree ("identifier");--> statement-breakpoint
-CREATE INDEX "login_attempts_locked_until_idx" ON "login_attempts" USING btree ("locked_until");
+DO $$ BEGIN
+ ALTER TABLE "idempotency_keys" ADD CONSTRAINT "idempotency_keys_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "idempotency_keys_key_user_unique" ON "idempotency_keys" USING btree ("key","user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idempotency_keys_user_id_idx" ON "idempotency_keys" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idempotency_keys_expires_at_idx" ON "idempotency_keys" USING btree ("expires_at");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "login_attempts_identifier_unique_idx" ON "login_attempts" USING btree ("identifier");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "login_attempts_locked_until_idx" ON "login_attempts" USING btree ("locked_until");
