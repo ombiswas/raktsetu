@@ -9,7 +9,8 @@ import {
   deferDonorSchema,
   bloodBankProfileResponseSchema,
   recordDonationResponseSchema,
-  deferDonorResponseSchema
+  deferDonorResponseSchema,
+  donorSafeSummaryResponseSchema
 } from './blood-banks.schema.js';
 import { createAuthenticateGuard, authorize } from '../../platform/http/guards/index.js';
 import type { DatabaseInstance } from '../../platform/database/connection.js';
@@ -142,7 +143,49 @@ export const bloodBankRoutes: FastifyPluginAsync<BloodBankRoutesOptions> = async
     (req, reply) => controller.deferDonor(req, reply)
   );
 
-  // 6. Blood Inventory Management (/me/inventory, /me/inventory/adjust)
+  // 6. GET /v1/blood-banks/donors/:id (Safe donor lookup without PII)
+  app.get<{ Params: { id: string } }>(
+    '/donors/:id',
+    {
+      config: {
+        auth: true,
+        roles: ['blood_bank']
+      },
+      preHandler: [authenticate, authorize('blood_bank')],
+      schema: {
+        tags: ['Blood Banks'],
+        summary: 'Look up safe donor eligibility and blood group summary without PII',
+        params: donorParamSchema,
+        response: {
+          200: donorSafeSummaryResponseSchema
+        }
+      }
+    },
+    (req, reply) => controller.getDonorSummary(req, reply)
+  );
+
+  // 7. GET /v1/blood-banks/me/donors/:id (alias)
+  app.get<{ Params: { id: string } }>(
+    '/me/donors/:id',
+    {
+      config: {
+        auth: true,
+        roles: ['blood_bank']
+      },
+      preHandler: [authenticate, authorize('blood_bank')],
+      schema: {
+        tags: ['Blood Banks'],
+        summary: 'Look up safe donor eligibility and blood group summary without PII',
+        params: donorParamSchema,
+        response: {
+          200: donorSafeSummaryResponseSchema
+        }
+      }
+    },
+    (req, reply) => controller.getDonorSummary(req, reply)
+  );
+
+  // 8. Blood Inventory Management (/me/inventory, /me/inventory/adjust)
   await app.register(inventoryRoutes, {
     db,
     config

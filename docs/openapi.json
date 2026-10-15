@@ -1484,6 +1484,152 @@
         }
       }
     },
+    "/v1/blood-banks/donors/{id}": {
+      "get": {
+        "summary": "Look up safe donor eligibility and blood group summary without PII",
+        "tags": [
+          "Blood Banks"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "bloodGroup": {
+                      "type": "string",
+                      "enum": [
+                        "A+",
+                        "A-",
+                        "B+",
+                        "B-",
+                        "AB+",
+                        "AB-",
+                        "O+",
+                        "O-"
+                      ]
+                    },
+                    "isAvailable": {
+                      "type": "boolean"
+                    },
+                    "eligibleAfter": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "lastDonationDate": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "bloodGroup",
+                    "isAvailable",
+                    "eligibleAfter",
+                    "lastDonationDate"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/blood-banks/me/donors/{id}": {
+      "get": {
+        "summary": "Look up safe donor eligibility and blood group summary without PII",
+        "tags": [
+          "Blood Banks"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "bloodGroup": {
+                      "type": "string",
+                      "enum": [
+                        "A+",
+                        "A-",
+                        "B+",
+                        "B-",
+                        "AB+",
+                        "AB-",
+                        "O+",
+                        "O-"
+                      ]
+                    },
+                    "isAvailable": {
+                      "type": "boolean"
+                    },
+                    "eligibleAfter": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "lastDonationDate": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "bloodGroup",
+                    "isAvailable",
+                    "eligibleAfter",
+                    "lastDonationDate"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/blood-banks/me/inventory": {
       "get": {
         "summary": "Get authenticated blood bank inventory stock and low-stock alerts",
@@ -2563,6 +2709,148 @@
                   "required": [
                     "message",
                     "account"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/audit-logs": {
+      "get": {
+        "summary": "Paginated and filterable read-only access to immutable audit logs",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "entity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "action",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "actorUserId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "in": "query",
+            "name": "offset",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "actorUserId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
+                          },
+                          "action": {
+                            "type": "string"
+                          },
+                          "entity": {
+                            "type": "string"
+                          },
+                          "entityId": {
+                            "type": "string"
+                          },
+                          "ipHash": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "metadata": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "additionalProperties": {}
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "actorUserId",
+                          "action",
+                          "entity",
+                          "entityId",
+                          "ipHash",
+                          "metadata",
+                          "createdAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "limit": {
+                      "type": "integer"
+                    },
+                    "offset": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "limit",
+                    "offset"
                   ],
                   "additionalProperties": false
                 }
@@ -3949,6 +4237,12 @@
                     },
                     "modelVersion": {
                       "type": "string"
+                    },
+                    "mae": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
                     },
                     "series": {
                       "type": "array",

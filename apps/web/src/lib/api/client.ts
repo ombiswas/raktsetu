@@ -164,3 +164,32 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 
   return (await response.text()) as unknown as T;
 }
+
+export const apiClient = {
+  get: <T>(endpoint: string, options?: ApiFetchOptions) =>
+    apiFetch<T>(endpoint, { ...options, method: 'GET' }),
+  post: <T>(endpoint: string, body?: unknown, options?: ApiFetchOptions) => {
+    const fetchOpts: ApiFetchOptions = { ...options, method: 'POST' };
+    if (body !== undefined) {
+      fetchOpts.body = typeof body === 'string' ? body : JSON.stringify(body);
+    }
+    return apiFetch<T>(endpoint, fetchOpts);
+  },
+  patch: <T>(endpoint: string, body?: unknown, options?: ApiFetchOptions) => {
+    const fetchOpts: ApiFetchOptions = { ...options, method: 'PATCH' };
+    if (body !== undefined) {
+      fetchOpts.body = typeof body === 'string' ? body : JSON.stringify(body);
+    }
+    return apiFetch<T>(endpoint, fetchOpts);
+  },
+  put: <T>(endpoint: string, body?: unknown, options?: ApiFetchOptions) => {
+    const fetchOpts: ApiFetchOptions = { ...options, method: 'PUT' };
+    if (body !== undefined) {
+      fetchOpts.body = typeof body === 'string' ? body : JSON.stringify(body);
+    }
+    return apiFetch<T>(endpoint, fetchOpts);
+  },
+  delete: <T>(endpoint: string, options?: ApiFetchOptions) =>
+    apiFetch<T>(endpoint, { ...options, method: 'DELETE' })
+};
+

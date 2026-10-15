@@ -7,7 +7,8 @@ import type {
   RecordDonationInput,
   RecordDonationResult,
   DeferDonorInput,
-  DeferDonorResult
+  DeferDonorResult,
+  SafeDonorSummary
 } from './blood-banks.types.js';
 
 export class BloodBanksService {
@@ -178,5 +179,13 @@ export class BloodBanksService {
       message: 'Donor deferral recorded successfully',
       deferral: result
     };
+  }
+
+  public async getDonorSummary(donorId: string): Promise<SafeDonorSummary> {
+    const donor = await this.repository.findDonorById(donorId);
+    if (!donor) {
+      throw new NotFoundError('Donor profile not found');
+    }
+    return donor;
   }
 }

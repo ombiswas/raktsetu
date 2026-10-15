@@ -45,4 +45,13 @@ export class BloodBanksController {
     );
     return reply.status(200).send(result);
   }
+
+  public async getDonorSummary(
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ): Promise<void> {
+    const donorId = request.params.id;
+    const donor = await this.service.getDonorSummary(donorId);
+    return reply.status(200).send(donor);
+  }
 }

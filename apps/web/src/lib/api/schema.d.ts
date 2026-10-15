@@ -934,6 +934,98 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/blood-banks/donors/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Look up safe donor eligibility and blood group summary without PII */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                            isAvailable: boolean;
+                            eligibleAfter: string | null;
+                            lastDonationDate: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/blood-banks/me/donors/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Look up safe donor eligibility and blood group summary without PII */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+                            isAvailable: boolean;
+                            eligibleAfter: string | null;
+                            lastDonationDate: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/blood-banks/me/inventory": {
         parameters: {
             query?: never;
@@ -1346,6 +1438,66 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/audit-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated and filterable read-only access to immutable audit logs */
+        get: {
+            parameters: {
+                query?: {
+                    entity?: string;
+                    action?: string;
+                    actorUserId?: string;
+                    limit?: number;
+                    offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                actorUserId: string | null;
+                                action: string;
+                                entity: string;
+                                entityId: string;
+                                ipHash: string | null;
+                                metadata: {
+                                    [key: string]: unknown;
+                                } | null;
+                                createdAt: string;
+                            }[];
+                            total: number;
+                            limit: number;
+                            offset: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1978,6 +2130,7 @@ export interface paths {
                             /** @enum {string} */
                             component: "whole_blood" | "rbc" | "plasma" | "platelets";
                             modelVersion: string;
+                            mae?: number | null;
                             series: {
                                 date: string;
                                 units: number;

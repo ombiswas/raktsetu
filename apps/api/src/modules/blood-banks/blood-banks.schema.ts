@@ -90,3 +90,12 @@ export const deferDonorResponseSchema = z.object({
     reason: z.string()
   })
 });
+
+export const donorSafeSummaryResponseSchema = z.object({
+  id: z.string().uuid(),
+  bloodGroup: bloodGroupEnumSchema,
+  isAvailable: z.boolean(),
+  eligibleAfter: z.string().nullable(),
+  lastDonationDate: z.string().nullable()
+});
+
