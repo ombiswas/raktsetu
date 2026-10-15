@@ -371,5 +371,313 @@ export const handlers = [
   // 20. Blood Requests: Matching Status GET
   http.get('/api/v1/requests/:id/matching', () => {
     return HttpResponse.json(mockMatchingStatusNormal);
+  }),
+
+  // 21. Blood Bank: Inventory GET
+  http.get('/api/v1/blood-banks/me/inventory', () => {
+    return HttpResponse.json(mockInventoryData);
+  }),
+
+  // 22. Blood Bank: Stock Adjust POST
+  http.post('/api/v1/blood-banks/me/inventory/adjust', async ({ request }) => {
+    const body = (await request.json()) as {
+      bloodGroup: string;
+      component: string;
+      delta: number;
+      reason: string;
+    };
+    return HttpResponse.json({
+      inventoryId: 'inv-adj-001',
+      bloodBankId: 'bb-101',
+      bloodGroup: body.bloodGroup,
+      component: body.component,
+      previousUnits: 10,
+      newUnits: 10 + body.delta,
+      delta: body.delta,
+      reason: body.reason,
+      movementId: 'mov-001',
+      isLowStock: 10 + body.delta < 10,
+      lowStockThreshold: 10,
+      createdAt: new Date().toISOString()
+    });
+  }),
+
+  // 23. Blood Bank: Safe Donor Summary GET
+  http.get('/api/v1/blood-banks/donors/:id', () => {
+    return HttpResponse.json(mockSafeDonorSummary);
+  }),
+
+  // 24. Blood Bank: Record Donation POST
+  http.post('/api/v1/blood-banks/me/donations', async ({ request }) => {
+    const body = (await request.json()) as {
+      donorId: string;
+      bloodGroup: string;
+      component: string;
+      units: number;
+    };
+    return HttpResponse.json(
+      {
+        message: 'Donation recorded successfully',
+        donation: {
+          donationId: 'don-001',
+          donorId: body.donorId,
+          bloodBankId: 'bb-101',
+          bloodGroup: body.bloodGroup,
+          component: body.component,
+          units: body.units,
+          donatedAt: new Date().toISOString(),
+          inventoryTotalUnits: 45
+        }
+      },
+      { status: 201 }
+    );
+  }),
+
+  // 25. Blood Bank: Defer Donor POST
+  http.post('/api/v1/blood-banks/donors/:id/defer', async ({ params, request }) => {
+    const body = (await request.json()) as {
+      eligibleAfter: string;
+      reason: string;
+    };
+    return HttpResponse.json({
+      message: 'Donor deferral recorded successfully',
+      deferral: {
+        donorId: params.id,
+        bloodGroup: 'O+',
+        eligibleAfter: body.eligibleAfter,
+        deferredAt: new Date().toISOString(),
+        reason: body.reason
+      }
+    });
+  }),
+
+  // 26. Forecasting: Overview GET
+  http.get('/api/v1/forecasts', () => {
+    return HttpResponse.json(mockForecastData);
+  }),
+
+  // 27. Analytics: Overview GET
+  http.get('/api/v1/analytics/overview', () => {
+    return HttpResponse.json(mockAnalyticsData);
+  }),
+
+  // 28. Admin: Accounts List GET
+  http.get('/api/v1/admin/accounts', ({ request }) => {
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+    const role = url.searchParams.get('role');
+
+    let filtered = [...mockAdminAccounts];
+    if (status && status !== 'all') {
+      filtered = filtered.filter((a) => a.status === status);
+    }
+    if (role && role !== 'all') {
+      filtered = filtered.filter((a) => a.role === role);
+    }
+
+    return HttpResponse.json({ accounts: filtered });
+  }),
+
+  // 29. Admin: Approve Account POST
+  http.post('/api/v1/admin/accounts/:id/approve', ({ params }) => {
+    const acc = mockAdminAccounts.find((a) => a.id === params.id) || mockAdminAccounts[0]!;
+    return HttpResponse.json({
+      message: 'User account approved successfully',
+      account: { ...acc, status: 'active' }
+    });
+  }),
+
+  // 30. Admin: Suspend Account POST
+  http.post('/api/v1/admin/accounts/:id/suspend', ({ params }) => {
+    const acc = mockAdminAccounts.find((a) => a.id === params.id) || mockAdminAccounts[0]!;
+    return HttpResponse.json({
+      message: 'User account suspended and all active sessions revoked',
+      account: { ...acc, status: 'suspended' }
+    });
+  }),
+
+  // 31. Admin: Reactivate Account POST
+  http.post('/api/v1/admin/accounts/:id/reactivate', ({ params }) => {
+    const acc = mockAdminAccounts.find((a) => a.id === params.id) || mockAdminAccounts[0]!;
+    return HttpResponse.json({
+      message: 'User account reactivated successfully',
+      account: { ...acc, status: 'active' }
+    });
+  }),
+
+  // 32. Admin: Audit Logs List GET
+  http.get('/api/v1/admin/audit-logs', ({ request }) => {
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '20', 10);
+    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+
+    return HttpResponse.json({
+      items: mockAuditLogs.items,
+      total: mockAuditLogs.total,
+      limit,
+      offset
+    });
   })
 ];
+
+export const mockInventoryData = {
+  bloodBankId: 'bb-101',
+  items: [
+    {
+      id: 'inv-1',
+      bloodBankId: 'bb-101',
+      bloodGroup: 'O+' as const,
+      component: 'whole_blood' as const,
+      units: 24,
+      isLowStock: false,
+      lowStockThreshold: 10,
+      updatedAt: '2026-10-15T10:00:00Z'
+    },
+    {
+      id: 'inv-2',
+      bloodBankId: 'bb-101',
+      bloodGroup: 'O-' as const,
+      component: 'whole_blood' as const,
+      units: 4,
+      isLowStock: true,
+      lowStockThreshold: 10,
+      updatedAt: '2026-10-15T10:30:00Z'
+    },
+    {
+      id: 'inv-3',
+      bloodBankId: 'bb-101',
+      bloodGroup: 'A+' as const,
+      component: 'platelets' as const,
+      units: 15,
+      isLowStock: false,
+      lowStockThreshold: 8,
+      updatedAt: '2026-10-15T11:00:00Z'
+    }
+  ],
+  totalUnits: 43,
+  lowStockCount: 1
+};
+
+export const mockSafeDonorSummary = {
+  id: '11111111-1111-1111-1111-111111111111',
+  bloodGroup: 'O+' as const,
+  isAvailable: true,
+  eligibleAfter: null,
+  lastDonationDate: '2026-06-01T10:00:00Z'
+};
+
+export const mockForecastData = {
+  bloodGroup: 'O+' as const,
+  component: 'whole_blood' as const,
+  modelVersion: 'v0.1.0-seasonal-baseline',
+  mae: 2.15,
+  series: [
+    { date: '2026-10-01', units: 12 },
+    { date: '2026-10-02', units: 15 },
+    { date: '2026-10-03', units: 8 },
+    { date: '2026-10-04', units: 20 },
+    { date: '2026-10-05', units: 14 }
+  ],
+  forecast: [
+    { step: 1, date: '2026-10-06', predictedUnits: 16 },
+    { step: 2, date: '2026-10-07', predictedUnits: 18 },
+    { step: 3, date: '2026-10-08', predictedUnits: 13 }
+  ],
+  isSimulation: true as const
+};
+
+export const mockAnalyticsData = {
+  requestsByStatus: {
+    open: 3,
+    matching: 5,
+    fulfilled: 42,
+    cancelled: 2,
+    expired: 1,
+    total: 53
+  },
+  responseRate: 0.78,
+  medianTimeToFirstAcceptSeconds: 145,
+  fulfillmentRate: 0.86,
+  radiusExpansionFrequency: 0.22,
+  degradedRunRate: 0.04,
+  totalMatchRuns: 58,
+  totalNotifications: 240,
+  timestamp: new Date().toISOString()
+};
+
+export const mockAdminAccounts = [
+  {
+    id: 'hosp-user-1',
+    email: 'apollo@hospital.org',
+    role: 'hospital' as const,
+    status: 'pending' as const,
+    createdAt: '2026-10-14T08:00:00Z',
+    details: {
+      name: 'Apollo Trauma Hospital',
+      registrationNo: 'HOSP-DEL-887',
+      phone: '+919811002233',
+      address: 'Sarita Vihar, New Delhi',
+      isVerified: false,
+      verifiedAt: null,
+      verifiedBy: null
+    }
+  },
+  {
+    id: 'bb-user-1',
+    email: 'redcross@bloodbank.org',
+    role: 'blood_bank' as const,
+    status: 'active' as const,
+    createdAt: '2026-10-10T10:00:00Z',
+    details: {
+      name: 'Red Cross Regional Blood Center',
+      licenseNo: 'BB-LIC-9988',
+      phone: '+919811223344',
+      address: 'Connaught Place, New Delhi',
+      isVerified: true,
+      verifiedAt: '2026-10-11T12:00:00Z'
+    }
+  },
+  {
+    id: 'donor-user-1',
+    email: 'suspended.donor@example.com',
+    role: 'donor' as const,
+    status: 'suspended' as const,
+    createdAt: '2026-09-01T00:00:00Z',
+    details: {
+      fullName: 'Rahul Sharma',
+      bloodGroup: 'B+',
+      isAvailable: false,
+      eligibleAfter: '2026-12-01',
+      lastDonationDate: null
+    }
+  }
+];
+
+export const mockAuditLogs = {
+  items: [
+    {
+      id: 'log-1',
+      actorUserId: 'admin-001',
+      action: 'admin.account.approve',
+      entity: 'users',
+      entityId: 'hosp-user-1',
+      ipHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      metadata: { role: 'hospital', previousStatus: 'pending' },
+      createdAt: '2026-10-15T12:00:00Z'
+    },
+    {
+      id: 'log-2',
+      actorUserId: 'bb-user-1',
+      action: 'blood_bank.donor.deferred',
+      entity: 'donors',
+      entityId: 'd-101',
+      ipHash: 'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
+      metadata: { eligibleAfter: '2026-11-01', reason: 'Low Hb' },
+      createdAt: '2026-10-15T11:30:00Z'
+    }
+  ],
+  total: 2,
+  limit: 20,
+  offset: 0
+};
+
