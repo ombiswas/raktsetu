@@ -15,12 +15,14 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:release": "tsx scripts/release-migrate.ts",
     "db:seed": "tsx src/platform/database/seed.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
     "exp:generate": "tsx src/modules/experiments/cli.ts",
-    "exp:run": "tsx src/modules/experiments/runner-cli.ts"
+    "exp:run": "tsx src/modules/experiments/runner-cli.ts",
+    "smoke": "tsx ../../scripts/smoke-test.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
@@ -30,7 +32,7 @@
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.2",
     "argon2": "^0.41.1",
-    "drizzle-orm": "^0.38.4",
+    "drizzle-orm": "^0.45.4",
     "fastify": "^5.2.1",
     "fastify-type-provider-zod": "^4.0.2",
     "jose": "^5.9.6",
@@ -56,5 +58,8 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.1",
     "vitest": "^3.0.6"
+  },
+  "overrides": {
+    "@fastify/static": "10.1.6"
   }
 }

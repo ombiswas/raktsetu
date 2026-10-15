@@ -18,7 +18,7 @@ import {
   type NotificationParam,
   type PushSubscriptionBody
 } from './notifications.schema.js';
-import { createAuthenticateGuard } from '../../platform/http/guards/index.js';
+import { createAuthenticateGuard, authorize } from '../../platform/http/guards/index.js';
 import type { DatabaseInstance } from '../../platform/database/connection.js';
 import type { Config } from '../../platform/config/index.js';
 
@@ -58,15 +58,17 @@ export const notificationsRoutes: FastifyPluginAsync<NotificationsRoutesOptions>
   const controller = new NotificationsController(service);
 
   const authenticate = createAuthenticateGuard(db, config);
+  const authorizeAny = authorize('donor', 'hospital', 'blood_bank', 'admin');
 
   // 1. SSE Stream: GET /v1/notifications/stream
   app.get(
     '/stream',
     {
       config: {
-        auth: true
+        auth: true,
+        roles: ['donor', 'hospital', 'blood_bank', 'admin']
       },
-      preHandler: [authenticate],
+      preHandler: [authenticate, authorizeAny],
       schema: {
         tags: ['Notifications'],
         summary: 'Server-Sent Events (SSE) notification stream',
@@ -84,9 +86,10 @@ export const notificationsRoutes: FastifyPluginAsync<NotificationsRoutesOptions>
     '/',
     {
       config: {
-        auth: true
+        auth: true,
+        roles: ['donor', 'hospital', 'blood_bank', 'admin']
       },
-      preHandler: [authenticate],
+      preHandler: [authenticate, authorizeAny],
       schema: {
         tags: ['Notifications'],
         summary: 'List user notifications (Fallback polling)',
@@ -106,9 +109,10 @@ export const notificationsRoutes: FastifyPluginAsync<NotificationsRoutesOptions>
     '/:id/read',
     {
       config: {
-        auth: true
+        auth: true,
+        roles: ['donor', 'hospital', 'blood_bank', 'admin']
       },
-      preHandler: [authenticate],
+      preHandler: [authenticate, authorizeAny],
       schema: {
         tags: ['Notifications'],
         summary: 'Mark notification as read',
@@ -125,9 +129,10 @@ export const notificationsRoutes: FastifyPluginAsync<NotificationsRoutesOptions>
     '/push-subscription',
     {
       config: {
-        auth: true
+        auth: true,
+        roles: ['donor', 'hospital', 'blood_bank', 'admin']
       },
-      preHandler: [authenticate],
+      preHandler: [authenticate, authorizeAny],
       schema: {
         tags: ['Notifications'],
         summary: 'Register WebPush VAPID subscription',
