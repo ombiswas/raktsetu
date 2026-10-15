@@ -17,6 +17,7 @@ out/
 .next/
 *.tsbuildinfo
 experiments/results/
+experiments/experiment_runs/
 
 # Design spec (RULE 5: Single source of truth, never commit or stage)
 design.md

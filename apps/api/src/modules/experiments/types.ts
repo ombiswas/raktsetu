@@ -153,3 +153,88 @@ export interface DatasetMetadata {
   num_records: number;
   summary_metrics?: Record<string, unknown>;
 }
+
+export const StrategyNameSchema = z.enum([
+  'baseline_proximity',
+  'hybrid_full',
+  'ablation_ml_only',
+  'ablation_geo_only'
+]);
+
+export type StrategyName = z.infer<typeof StrategyNameSchema>;
+
+export interface StrategyRunMetrics {
+  strategy: StrategyName;
+  requestId: string;
+  seed: number;
+  urgency: UrgencyLevel;
+  unitsRequired: number;
+  unitsFulfilled: number;
+  fulfilled: boolean;
+  donorsContacted: number;
+  topKResponseRate: number;
+  timeToFirstAcceptSec: number | null;
+  timeToFulfillmentSec: number | null;
+  meanDonorDistanceKm: number;
+  medianDonorDistanceKm: number;
+  acceptedMeanDistanceKm: number | null;
+  radiusExpansions: number;
+  batchesDispatched: number;
+}
+
+export interface MetricStatistics {
+  mean: number;
+  stdDev: number;
+  ci95Lower: number;
+  ci95Upper: number;
+  median: number;
+}
+
+export interface StrategySummaryStatistics {
+  strategy: StrategyName;
+  totalRequests: number;
+  fulfillmentRate: MetricStatistics;
+  donorsContacted: MetricStatistics;
+  topKResponseRate: MetricStatistics;
+  timeToFirstAcceptSec: MetricStatistics;
+  timeToFulfillmentSec: MetricStatistics;
+  meanDonorDistanceKm: MetricStatistics;
+  medianDonorDistanceKm: MetricStatistics;
+  radiusExpansions: MetricStatistics;
+}
+
+export interface PairedComparison {
+  metric: string;
+  baselineMean: number;
+  hybridMean: number;
+  meanDifference: number; // hybrid - baseline
+  ci95Lower: number;
+  ci95Upper: number;
+  interpretation: string;
+}
+
+export interface SensitivitySweepPoint {
+  parameter: 'population_size' | 'base_response_rate' | 'noise_level' | 'urgency_mix';
+  valueLabel: string;
+  strategy: StrategyName;
+  fulfillmentRate: number;
+  meanTimeToFirstAcceptSec: number;
+  meanTimeToFulfillmentSec: number;
+  meanDonorsContacted: number;
+  meanDonorDistanceKm: number;
+  topKResponseRate: number;
+}
+
+export interface SimulationOutputBundle {
+  simulation: true;
+  disclaimer: string;
+  seed: number;
+  numSeeds: number;
+  configHash: string;
+  executedAt: string;
+  requestCount: number;
+  strategySummaries: Record<StrategyName, StrategySummaryStatistics>;
+  pairedComparisons: PairedComparison[];
+  sensitivityResults?: SensitivitySweepPoint[] | undefined;
+}
+
